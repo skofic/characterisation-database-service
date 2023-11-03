@@ -1,16 +1,33 @@
 {
-    "name": "CharacterisationService",
-    "version": "0.0.0",
-    "description": "Characterisation data service",
-    "engines": {
-        "arangodb": "^3.0.0"
-    },
-    "author": "Milko Skofic",
-    "license": "Apache 2",
-    "main": "main.js",
-    "scripts": {
-        "setup": "scripts/setup.js",
-        "teardown": "scripts/teardown.js"
-    },
-    "tests": "test/**/*.js"
+	"name": "CharacterisationService",
+	"version": "0.1.0",
+	"description": "Characterisation data service",
+	"engines": {
+		"arangodb": "^3.0.0"
+	},
+
+	"author": "Milko Skofic",
+	"license": "Apache 2",
+	"main": "main.js",
+
+	"scripts": {
+		"setup": "scripts/setup.js",
+		"teardown": "scripts/teardown.js"
+	},
+	"tests": "test/**/*.js",
+
+	"$schema": "http://json.schemastore.org/foxx-manifest",
+
+    "configuration": {
+        "data_coll_name": {
+            "description": "Data collection name.",
+            "default": "Data",
+            "type": "string"
+        },
+        "dataset_coll_name": {
+            "description": "Dataset collection name.",
+            "default": "Dataset",
+            "type": "string"
+        }
+    }
 }

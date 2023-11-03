@@ -1,0 +1,84 @@
+///
+// Genetic index MINIMUM statistics - embedded markers.
+///
+FOR set IN Dataset
+    FILTER set._key == @dataset
+
+    LET items = (
+        FOR dat IN Data
+            FILTER dat.std_dataset_id == @dataset
+            COLLECT species = dat.species
+            INTO groups
+
+        FOR doc IN set.std_dataset_markers
+            FILTER doc.species == species
+
+        RETURN {
+            species: species,
+            properties: {
+                [CONCAT_SEPARATOR("_", doc.chr_GenIndex, "marker")]: doc.chr_SequenceLength == null ? {
+                    [doc.chr_GenIndex]: MIN(groups[*].dat[doc.chr_GenIndex]),
+                    chr_MarkerType: doc.chr_MarkerType,
+                    chr_NumberOfLoci: doc.chr_NumberOfLoci,
+                    chr_GenoTech: doc.chr_GenoTech
+                } : {
+                    [doc.chr_GenIndex]: MIN(groups[*].dat[doc.chr_GenIndex]),
+                    chr_MarkerType: doc.chr_MarkerType,
+                    chr_NumberOfLoci: doc.chr_NumberOfLoci,
+                    chr_SequenceLength: doc.chr_SequenceLength,
+                    chr_GenoTech: doc.chr_GenoTech
+                }
+            }
+        }
+    )
+
+FOR item IN items
+    COLLECT species = item.species
+    INTO groups
+
+RETURN {
+    species: species,
+    properties: MERGE_RECURSIVE(groups[*].item.properties)
+}
+
+
+///
+// Genetic index MINIMUM statistics - external markers.
+///
+LET items = (
+    FOR dat IN Data
+        FILTER dat.std_dataset_id == @dataset
+        COLLECT species = dat.species
+        INTO groups
+
+    FOR doc IN Metaset
+        FILTER doc.std_dataset_id == @dataset
+        FILTER doc.species == species
+
+    RETURN {
+        species: species,
+        properties: {
+            [CONCAT_SEPARATOR("_", doc.chr_GenIndex, "marker")]: doc.chr_SequenceLength == null ? {
+                [doc.chr_GenIndex]: MIN(groups[*].dat[doc.chr_GenIndex]),
+                chr_MarkerType: doc.chr_MarkerType,
+                chr_NumberOfLoci: doc.chr_NumberOfLoci,
+                chr_GenoTech: doc.chr_GenoTech
+            } : {
+                [doc.chr_GenIndex]: MIN(groups[*].dat[doc.chr_GenIndex]),
+                chr_MarkerType: doc.chr_MarkerType,
+                chr_NumberOfLoci: doc.chr_NumberOfLoci,
+                chr_SequenceLength: doc.chr_SequenceLength,
+                chr_GenoTech: doc.chr_GenoTech
+            }
+        }
+    }
+)
+
+FOR item IN items
+    COLLECT species = item.species
+    INTO groups
+
+RETURN {
+    species: species,
+    properties: MERGE_RECURSIVE(groups[*].item.properties)
+}

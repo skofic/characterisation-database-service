@@ -1,0 +1,70 @@
+///
+// Expand genetic dataset data - embedded metaset.
+///
+LET attrs = ["_id", "_key", "_rev", "std_dataset_id"]
+
+FOR set IN Dataset
+    FILTER set._key == @dataset
+    LET idx = set.std_dataset_markers[*].chr_GenIndex
+
+FOR dat IN Data
+    FILTER dat.std_dataset_id == @dataset
+
+    LET meta = (
+        FOR doc IN set.std_dataset_markers
+            FILTER doc.species == dat.species
+
+        RETURN {
+            [CONCAT_SEPARATOR("_", doc.chr_GenIndex, "marker")]: doc.chr_SequenceLength == null ? {
+                [doc.chr_GenIndex]: dat[doc.chr_GenIndex],
+                chr_MarkerType: doc.chr_MarkerType,
+                chr_NumberOfLoci: doc.chr_NumberOfLoci,
+                chr_GenoTech: doc.chr_GenoTech
+            } : {
+                [doc.chr_GenIndex]: dat[doc.chr_GenIndex],
+                chr_MarkerType: doc.chr_MarkerType,
+                chr_NumberOfLoci: doc.chr_NumberOfLoci,
+                chr_SequenceLength: doc.chr_SequenceLength,
+                chr_GenoTech: doc.chr_GenoTech
+            }
+        }
+    )
+
+RETURN MERGE(
+    UNSET(dat, APPEND(attrs, idx)),
+    MERGE_RECURSIVE(meta)
+)
+
+
+///
+// Expand genetic dataset data - external metaset.
+///
+LET attrs = ["_id", "_key", "_rev", "std_dataset_id"]
+
+FOR doc IN Metaset
+    FILTER doc.std_dataset_id == @dataset
+
+    COLLECT species = doc.species
+    INTO groups
+
+    FOR dat IN Data
+        FILTER dat.std_dataset_id == @dataset
+        FILTER dat.species == species
+
+        LET idxs = (
+            FOR doc IN groups[*].doc
+            RETURN {
+                [CONCAT_SEPARATOR("_", doc.chr_GenIndex, "marker")]: {
+                    [doc.chr_GenIndex]: dat[doc.chr_GenIndex],
+                    chr_MarkerType: doc.chr_MarkerType,
+                    chr_NumberOfLoci: doc.chr_NumberOfLoci,
+                    chr_SequenceLength: doc.chr_SequenceLength,
+                    chr_GenoTech: doc.chr_GenoTech
+                }
+            }
+        )
+
+    RETURN MERGE(
+        UNSET(dat, APPEND(attrs, groups[*].doc.chr_GenIndex)),
+        MERGE_RECURSIVE(idxs)
+    )

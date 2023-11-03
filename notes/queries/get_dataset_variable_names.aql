@@ -1,0 +1,7 @@
+///
+// Get characterisation dataset list of data descriptors.
+///
+FOR doc IN Data
+    FILTER doc.std_dataset_id == @dataset
+    COLLECT AGGREGATE vars = UNIQUE(MINUS(ATTRIBUTES(doc, true), ["std_dataset_id"]))
+RETURN UNIQUE(FLATTEN(vars))
