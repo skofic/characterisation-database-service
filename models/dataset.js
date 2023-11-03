@@ -43,6 +43,10 @@ module.exports = {
 		})
 			.required()
 			.description("Dataset description"),
+		_domain: joi.array()
+			.required()
+			.items(joi.string())
+			.description("Dataset domains"),
 		std_terms: joi.array()
 			.required()
 			.items(joi.string())

@@ -1,0 +1,8 @@
+///
+// Get descriptor domains.
+///
+FOR doc IN terms
+    FILTER doc._key IN @terms
+    FILTER HAS(doc._data, "_domain")
+    COLLECT AGGREGATE domains = UNIQUE(doc._data._domain)
+RETURN UNIQUE(FLATTEN(domains))
