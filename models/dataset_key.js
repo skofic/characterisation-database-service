@@ -1,7 +1,7 @@
 /**
  * dataset.js
  *
- * Dataset model.
+ * Dataset model with required key.
  */
 'use strict'
 
@@ -13,7 +13,7 @@ module.exports = {
 	schema: joi.object({
 		// Describe the attributes with joi here
 		_key: joi.string()
-			.optional()
+			.required()
 			.description("The key of the dataset"),
 		project: joi.string()
 			.required()
