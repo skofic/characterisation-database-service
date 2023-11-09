@@ -49,7 +49,12 @@ module.exports = router
 ///
 // Service tag.
 ///
-router.tag('Dataset CRUD')
+router.tag('Dataset')
+
+
+/**
+ * SERVICES
+ */
 
 
 /**
@@ -254,3 +259,10 @@ router.delete(
 	.description(dd`
 		Deletes a dataset from the database.
 	`)
+
+
+/**
+ * UTILITIES
+ */
+
+
