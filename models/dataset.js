@@ -15,10 +15,10 @@ module.exports = {
 		_key: joi.string()
 			.optional()
 			.description("The key of the dataset"),
-		project: joi.string()
+		std_project: joi.string()
 			.required()
 			.description("The dataset's project"),
-		dataset: joi.string()
+		std_dataset: joi.string()
 			.required()
 			.description("The dataset's code or acronym"),
 		_subject: joi.string()

@@ -29,16 +29,33 @@ const HTTP_CONFLICT = status('conflict')
 ///
 // Globals.
 ///
-const database = require('../globals/database')
 const Model = require('../models/dataset')
-const ModelKey = require('../models/dataset_key')
-const keySchema = joi.string().required()
+const ModelQuery = require('../models/datasetQuery')
+const keySchema = joi.string()
+	.required()
 	.description('The key of the dataset')
+const keyListSchema = joi.array()
+	.items(joi.string())
+	.required()
+	.description('The list of dataset keys')
 
 ///
 // Collections.
 ///
+const database = require('../globals/database')
 const collection = db._collection(database.documentCollections.dataset)
+
+///
+// Parameters.
+///
+const parameters = [
+	"project", "dataset",
+	"date", "date_submission",
+	"subject", "domain", "tag",
+	"variable",
+	"title", "description"
+]
+
 
 ///
 // Router.
@@ -58,207 +75,38 @@ router.tag('Dataset')
 
 
 /**
- * Get all records.
+ * Select datasets.
  *
- * The service will return the full list of all datasets.
- * No sorting or selection is applied.
- */
-router.get(
-	function (req, res) {
-		res.send(collection.all())
-	},
-	'list'
-)
-	.response([ModelKey], 'List of dataset records.')
-	.summary('Get full list of datasets')
-	.description(dd`
-		Retrieves the list of all dataset records.
-		No sorting or selection is applied.
-	`)
-
-/**
- * Create a new record.
+ * The service allows selecting datasets based on a series of selection criteria.
  *
- * This service will create a new dataset record.
- * Note that you are responsible for providing the dataset key.
  */
 router.post(
-	function (req, res) {
-		const doc = req.body
-		let meta
-
-		try
-		{
-			meta = collection.save(doc)
-
-			res.status(201)
-			res.set('location', req.makeAbsolute(
-				req.reverse('detail', {key: doc._key})
-			))
-
-			res.send({...doc, ...meta})
-		}
-
-		catch (error)
-		{
-			if (error.isArangoError && error.errorNum === ARANGO_DUPLICATE) {
-				throw httpError(HTTP_CONFLICT, error.message)
-			}
-			throw error
-		}
+	'query/key',
+	(req, res) => {
+		res.send(testQuery(req, res))
 	},
-	'create'
+	'queryDatasetKeys'
 )
-	.body(ModelKey, 'The dataset to create.')
-	.response(201, Model, 'The created dataset.')
-	.error(HTTP_CONFLICT, 'The dataset already exists.')
-	.summary('Create a new dataset')
+	.summary('Query dataset keys')
 	.description(dd`
-		Creates a new dataset from the request body and returns the saved document.
+		Retrieve dataset keys based on a set of query parameters, fill body with selection \
+		criteria and the service will return matching list of dataset keys.
 	`)
-
-/**
- * Return record by key.
- *
- * The service will return the dataset matching the provided key.
- */
-router.get(
-	':key', function (req, res){
-		const key = req.pathParams.key
-		let doc
-
-		try
-		{
-			doc = collection.document(key)
-		}
-
-		catch (error)
-		{
-			if (error.isArangoError && error.errorNum === ARANGO_NOT_FOUND) {
-				throw httpError(HTTP_NOT_FOUND, error.message)
-			}
-			throw error
-		}
-
-		res.send(doc)
-	},
-	'detail'
-)
-	.pathParam('key', keySchema)
-	.response(ModelKey, 'The dataset.')
-	.summary('Fetch a dataset')
-	.description(dd`
-		Retrieves a dataset by its key.
+	.body(ModelQuery, dd`
+		The body is an object that contains the query parameters: \		
+		- \`project\`: Project code, provide a list of project codes.
+		- \`dataset\`: dataset code, provide a list of dataset codes.
+		- \`date\`: Dataset date range, provide start and end dates with inclusion flags.
+		- \`date_submission\`: Dataset submission date range, provide start and end dates with inclusion flags.
+		- \`subject\`: Dataset data subjects, provide list of subjects.
+		- \`domain\`: Dataset data domains, provide list of domains.
+		- \`tag\`: Dataset data tags, provide list of tags.
+		- \`variable\`: Dataset data descriptors, provide list of global identifiers.
+		- \`title\`: Dataset data title text, provide keywords.
+		- \`description\`: Dataset data description text, provide keywords.
+		Remove the properties that do not have selection values.
 	`)
-
-/**
- * Replace record.
- *
- * This service will replace the record identified by the provided key.
- */
-router.put(
-	':key', function (req, res) {
-		const key = req.pathParams.key
-		const doc = req.body
-		let meta
-
-		try
-		{
-			meta = collection.replace(key, doc)
-		}
-
-		catch (error)
-		{
-			if (error.isArangoError && error.errorNum === ARANGO_NOT_FOUND) {
-				throw httpError(HTTP_NOT_FOUND, error.message)
-			}
-			if (error.isArangoError && error.errorNum === ARANGO_CONFLICT) {
-				throw httpError(HTTP_CONFLICT, error.message)
-			}
-			throw error
-		}
-
-		res.send({...doc, ...meta})
-	},
-	'replace'
-)
-	.pathParam('key', keySchema)
-	.body(Model, 'The data to replace the dataset with.')
-	.response(Model, 'The new dataset.')
-	.summary('Replace a dataset')
-	.description(dd`
-		Replaces an existing dataset with the request body and returns the new document.
-	`)
-
-/**
- * Update record.
- *
- * Update dataset identified by the provided key with the provided object.
- */
-router.patch(
-	':key', function (req, res) {
-		const key = req.pathParams.key
-		const patchData = req.body
-		let doc
-
-		try
-		{
-			collection.update(key, patchData)
-			doc = collection.document(key)
-		}
-
-		catch (error)
-		{
-			if (error.isArangoError && error.errorNum === ARANGO_NOT_FOUND) {
-				throw httpError(HTTP_NOT_FOUND, error.message)
-			}
-			if (error.isArangoError && error.errorNum === ARANGO_CONFLICT) {
-				throw httpError(HTTP_CONFLICT, error.message)
-			}
-			throw error
-		}
-
-		res.send(doc)
-	},
-	'update'
-)
-	.pathParam('key', keySchema)
-	.body(joi.object().description('The data to update the dataset with.'))
-	.response(Model, 'The updated dataset.')
-	.summary('Update a dataset')
-	.description(dd`
-		Patches a dataset with the request body and returns the updated document.
-	`)
-
-/**
- * Delete record.
- *
- * This service will delete the dataset identified by the provided key.
- */
-router.delete(
-	':key', function (req, res) {
-		const key = req.pathParams.key
-
-		try
-		{
-			collection.remove(key)
-		}
-
-		catch (error) {
-			if (error.isArangoError && error.errorNum === ARANGO_NOT_FOUND) {
-				throw httpError(HTTP_NOT_FOUND, error.message)
-			}
-			throw error
-		}
-	},
-	'delete'
-)
-	.pathParam('key', keySchema)
-	.response(null)
-	.summary('Remove a dataset')
-	.description(dd`
-		Deletes a dataset from the database.
-	`)
+	.response(keyListSchema)
 
 
 /**
@@ -266,3 +114,62 @@ router.delete(
  */
 
 
+function testQuery(request, response)
+{
+	///
+	// Get valid query parameters.
+	///
+	const query_parameters = {}
+	for (const parameter of parameters) {
+		if (request.body[parameter] !== undefined) {
+			switch (parameter) {
+				case "date":
+				case "date_submission":
+					query_parameters[parameter] = request.body[parameter]
+					break;
+				default:
+					if (request.body[parameter].length > 0) {
+						query_parameters[parameter] = request.body[parameter]
+					}
+					break;
+			}
+		}
+	}
+
+	///
+	// Check if empty.
+	///
+	if(Object.keys(query_parameters).length === 0) {
+		return []                                                               // ==>
+	}
+
+	///
+	// Parse filters.
+	///
+	const filters = []
+	for(const [key, value] of Object.entries(query_parameters)) {
+		switch (key) {
+			case "subject":
+				filters.push(`doc._data._subject IN [${value}]`)
+				break;
+			case "domain":
+				filters.push(`doc._data._domain IN [${value}]`)
+				break;
+		}
+	}
+
+	///
+	// Build filters block.
+	///
+	const query = aql`
+		FOR doc IN ${collection}
+			FILTER ${filters.join(' AND ')}
+		RETURN doc._key
+	`
+
+	///
+	// Query.
+	///
+	return db._query(query).toArray()                                           // ==>
+
+} // testQuery()
