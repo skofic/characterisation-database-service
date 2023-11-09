@@ -83,7 +83,11 @@ router.tag('Dataset')
 router.post(
 	'query/key',
 	(req, res) => {
-		res.send(testQuery(req, res))
+		try{
+			res.send(testQuery(req, res))
+		} catch (error) {
+			throw error                                                         // ==>
+		}
 	},
 	'queryDatasetKeys'
 )
@@ -149,21 +153,44 @@ function testQuery(request, response)
 	const filters = []
 	for(const [key, value] of Object.entries(query_parameters)) {
 		switch (key) {
+			case 'project':
+				filters.push(`doc.std_project IN [${value}]`)
+				break
+			case "dataset":
+				filters.push(`doc.std_dataset IN [${value}]`)
+				break
+			case "date":
+				filters.push(`IN_RANGE(doc.std_date, ${value.start}, ${value.end}, ${value.include_start}, ${value.include_end})`)
+				break
+			case "date_submission":
+				filters.push(`IN_RANGE(doc.std_date_submission, ${value.start}, ${value.end}, ${value.include_start}, ${value.include_end})`)
+				break
 			case "subject":
-				filters.push(`doc._data._subject IN [${value}]`)
-				break;
+				filters.push(`doc._subject IN [${value}]`)
+				break
 			case "domain":
-				filters.push(`doc._data._domain IN [${value}]`)
-				break;
+				filters.push(`doc._domain ANY IN [${value}]`)
+				break
+			case "tag":
+				filters.push(`doc._tag ANY IN [${value}]`)
+				break
+			case "variable":
+				filters.push(`doc.std_terms ANY IN [${value}]`)
+				break
+			case "title":
+			case "description":
+				break
 		}
 	}
+
+	return `${filters.join(' AND ')}`
 
 	///
 	// Build filters block.
 	///
 	const query = aql`
 		FOR doc IN ${collection}
-			FILTER ${filters.join(' AND ')}
+			FILTER ${filters.join(' AND \n')}
 		RETURN doc._key
 	`
 
