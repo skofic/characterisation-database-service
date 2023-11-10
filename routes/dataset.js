@@ -10,21 +10,10 @@
 ///
 const dd = require('dedent')
 const joi = require('joi')
-const httpError = require('http-errors')
 const status = require('statuses')
 const {aql, db} = require('@arangodb')
 const {errors} = require('@arangodb')
-const {context} = require('@arangodb/locals')
 const createRouter = require('@arangodb/foxx/router')
-
-///
-// Messages.
-///
-const ARANGO_NOT_FOUND = errors.ERROR_ARANGO_DOCUMENT_NOT_FOUND.code
-const ARANGO_DUPLICATE = errors.ERROR_ARANGO_UNIQUE_CONSTRAINT_VIOLATED.code
-const ARANGO_CONFLICT = errors.ERROR_ARANGO_CONFLICT.code
-const HTTP_NOT_FOUND = status('not found')
-const HTTP_CONFLICT = status('conflict')
 
 ///
 // Globals.
@@ -36,9 +25,6 @@ const opSchema = joi.string()
 	.default("AND")
 	.required()
 	.description('Chaining operator for query filters')
-const keySchema = joi.string()
-	.required()
-	.description('The key of the dataset')
 const keyListSchema = joi.array()
 	.items(joi.string())
 	.required()
@@ -55,14 +41,6 @@ const QueryParameters = [
 	"std_terms",
 	"_title", "_description"
 ]
-
-///
-// Collections.
-///
-const database = require('../globals/database')
-const collection = db._collection(database.documentCollections.dataset)
-const view = db._view(database.documentViews.dataset_view)
-
 
 ///
 // Router.
@@ -264,7 +242,7 @@ function searchDatasetObjects(request, response)
  *
  * @param request {Object}: Service request.
  * @param response {Object}: Service response.
- * @returns {*[]}: Array of AQL filter conditions.
+ * @returns {[String]}: Array of AQL filter conditions.
  */
 function datasetQueryFilters(request, response)
 {

@@ -16,6 +16,7 @@ const documentCollections = {
 }
 
 const documentViews = {
+	"data_view": module.context.configuration.data_view_name,
 	"dataset_view": module.context.configuration.dataset_view_name
 }
 

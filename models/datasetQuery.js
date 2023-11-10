@@ -29,7 +29,7 @@ module.exports = {
 				.required(),
 			include_end: joi.boolean()
 				.required()
-		}),
+		}).description("Dataset measurement date range"),
 		std_date_submission: joi.object({
 			start: joi.string()
 				.required(),
@@ -39,7 +39,7 @@ module.exports = {
 				.required(),
 			include_end: joi.boolean()
 				.required()
-		}),
+		}).description("Dataset submission date range"),
 		_subject: joi.array()
 			.items(joi.string())
 			.description("Dataset measurement subjects"),

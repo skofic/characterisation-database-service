@@ -24,6 +24,11 @@
             "default": "Data",
             "type": "string"
         },
+		"data_view_name": {
+			"description": "Data view name.",
+			"default": "VIEW_DATA",
+			"type": "string"
+		},
 		"dataset_coll_name": {
 			"description": "Dataset collection name.",
 			"default": "Dataset",
