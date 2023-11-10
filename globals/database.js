@@ -12,8 +12,13 @@
 ///
 const documentCollections = {
 	"data": module.context.configuration.data_coll_name,
-	"dataset": module.context.configuration.dataset_coll_name
+	"dataset": module.context.configuration.dataset_coll_name,
 }
+
+const documentViews = {
+	"dataset_view": module.context.configuration.dataset_view_name
+}
+
 const edgeCollections = {}
 
 ///
@@ -21,6 +26,8 @@ const edgeCollections = {}
 ///
 module.exports = {
 	documentCollections,
+	documentViews,
+
 	edgeCollections
 }
 

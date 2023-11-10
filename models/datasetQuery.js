@@ -12,13 +12,15 @@ module.exports = {
 
 	schema: joi.object({
 		// Describe the attributes with joi here
-		project: joi.array()
+		_key: joi.array()
+			.items(joi.string())
+			.description("Dataset identifiers"),
+		std_project: joi.array()
 			.items(joi.string())
 			.description("Dataset project codes"),
-		dataset: joi.array()
-			.items(joi.string())
-			.description("Dataset codes or acronyms"),
-		date: joi.object({
+		std_dataset: joi.string()
+			.description("Dataset code or acronym wildcard"),
+		std_date: joi.object({
 			start: joi.string()
 				.required(),
 			end: joi.string()
@@ -28,7 +30,7 @@ module.exports = {
 			include_end: joi.boolean()
 				.required()
 		}),
-		date_submission: joi.object({
+		std_date_submission: joi.object({
 			start: joi.string()
 				.required(),
 			end: joi.string()
@@ -38,23 +40,21 @@ module.exports = {
 			include_end: joi.boolean()
 				.required()
 		}),
-		subject: joi.array()
+		_subject: joi.array()
 			.items(joi.string())
 			.description("Dataset measurement subjects"),
-		domain: joi.array()
+		_domain: joi.array()
 			.items(joi.string())
 			.description("Dataset tags"),
-		tag: joi.array()
+		_tag: joi.array()
 			.items(joi.string())
 			.description("Dataset data domains"),
-		variable: joi.array()
+		std_terms: joi.array()
 			.items(joi.string())
 			.description("Dataset data variables"),
-		title: joi.array()
-			.items(joi.string())
+		_title: joi.string()
 			.description("Dataset title tokens"),
-		description: joi.array()
-			.items(joi.string())
+		_description: joi.string()
 			.description("Dataset description tokens")
 	})
 		.description("Dataset search parameters"),
