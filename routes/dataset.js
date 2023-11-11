@@ -10,9 +10,7 @@
 ///
 const dd = require('dedent')
 const joi = require('joi')
-const status = require('statuses')
 const {aql, db} = require('@arangodb')
-const {errors} = require('@arangodb')
 const createRouter = require('@arangodb/foxx/router')
 
 ///

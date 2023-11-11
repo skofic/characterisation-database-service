@@ -10,9 +10,7 @@
 ///
 const dd = require('dedent')
 const joi = require('joi')
-const status = require('statuses')
 const {aql, db} = require('@arangodb')
-const {errors} = require('@arangodb')
 const createRouter = require('@arangodb/foxx/router')
 
 ///
@@ -48,12 +46,6 @@ const QueryParameters = [
 	'species',
 	'tree_code'
 ]
-
-///
-// Collections.
-///
-const database = require('../globals/database')
-
 
 ///
 // Router.
@@ -206,26 +198,20 @@ function datasetData(request, response)
 	///
 	// Determine dataset type.
 	///
-	let query
-	const dataset = db._document(database.documentCollections.dataset + '/' + dset)
-	if(dataset.hasOwnProperty('std_dataset_markers'))
-	{
-		///
-		// Build filters block.
-		///
-		query = aql`
-		LET attrs = ["_id", "_key", "_rev", "std_dataset_id"]
-		
-		FOR set IN VIEW_DATASET
-		    SEARCH set._key == ${dset}
+	const query = aql`
+		FOR set IN dataset
+		    FILTER set._key == ${dset}
 		    
-		    LET idx = set.std_dataset_markers[*].chr_GenIndex
-		        
+		    LET markers = HAS(set, 'std_dataset_markers')
+		                ? set.std_dataset_markers
+		                : []
+		
 		    FOR dat IN VIEW_DATA
-		        SEARCH dat.std_dataset_id == ${dset}
-		        
+		        SEARCH dat.std_dataset_id == set._key
+		        LIMIT ${start}, ${limit}
+		
 		        LET meta = (
-		            FOR doc IN set.std_dataset_markers
+		            FOR doc IN markers
 		                FILTER doc.species == dat.species
 		                
 		            RETURN {
@@ -243,25 +229,18 @@ function datasetData(request, response)
 		                }
 		            }
 		        )
-		    
+		
 		    RETURN MERGE(
-		        UNSET(dat, APPEND(attrs, idx)),
+		        UNSET(
+		            dat,
+		            APPEND(
+		                ["_id", "_key", "_rev", "std_dataset_id"],
+		                set.std_dataset_markers[*].chr_GenIndex
+		            )
+		        ),
 		        MERGE_RECURSIVE(meta)
 		    )
-		`
-	}
-	else
-	{
-		///
-		// Build filters block.
-		///
-		query = aql`
-			FOR doc IN VIEW_DATA
-				SEARCH doc.std_dataset_id == ${dset}
-				LIMIT ${start}, ${limit}
-			RETURN doc
-		`
-	}
+	`
 
 	///
 	// Query.
