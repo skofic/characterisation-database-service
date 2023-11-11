@@ -115,7 +115,7 @@ router.post(
 	},
 	'queryDatasetData'
 )
-	.summary('Query data')
+	.summary('Query dataset data records')
 	.description(dd`
 		The service will allow querying the data elements belonging to the provided dataset.
 	`)
