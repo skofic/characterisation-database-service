@@ -53,8 +53,6 @@ const QueryParameters = [
 // Collections.
 ///
 const database = require('../globals/database')
-const collection_data = db._collection(database.documentCollections.data)
-const collection_dataset = db._collection(database.documentCollections.dataset)
 
 
 ///
@@ -216,40 +214,40 @@ function datasetData(request, response)
 		// Build filters block.
 		///
 		query = aql`
-			LET attrs = ["_id", "_key", "_rev", "std_dataset_id"]
-			
-			FOR set IN ${collection_dataset}
-			    FILTER set._key == ${dset}
-			    
-			    LET idx = set.std_dataset_markers[*].chr_GenIndex
-			    
-			FOR dat IN ${collection_data}
-			    FILTER dat.std_dataset_id == ${dset}
-			    
-			    LET meta = (
-			        FOR doc IN set.std_dataset_markers
-			            FILTER doc.species == dat.species
-			            
-			        RETURN {
-			            [CONCAT_SEPARATOR("_", doc.chr_GenIndex, "marker")]: doc.chr_SequenceLength == null ? {
-			                [doc.chr_GenIndex]: dat[doc.chr_GenIndex],
-			                chr_MarkerType: doc.chr_MarkerType,
-			                chr_NumberOfLoci: doc.chr_NumberOfLoci,
-			                chr_GenoTech: doc.chr_GenoTech
-			            } : {
-			                [doc.chr_GenIndex]: dat[doc.chr_GenIndex],
-			                chr_MarkerType: doc.chr_MarkerType,
-			                chr_NumberOfLoci: doc.chr_NumberOfLoci,
-			                chr_SequenceLength: doc.chr_SequenceLength,
-			                chr_GenoTech: doc.chr_GenoTech
-			            }
-			        }
-			    )
-			
-			RETURN MERGE(
-			    UNSET(dat, APPEND(attrs, idx)),
-			    MERGE_RECURSIVE(meta)
-			)
+		LET attrs = ["_id", "_key", "_rev", "std_dataset_id"]
+		
+		FOR set IN VIEW_DATASET
+		    SEARCH set._key == ${dset}
+		    
+		    LET idx = set.std_dataset_markers[*].chr_GenIndex
+		        
+		    FOR dat IN VIEW_DATA
+		        SEARCH dat.std_dataset_id == ${dset}
+		        
+		        LET meta = (
+		            FOR doc IN set.std_dataset_markers
+		                FILTER doc.species == dat.species
+		                
+		            RETURN {
+		                [CONCAT_SEPARATOR("_", doc.chr_GenIndex, "marker")]: doc.chr_SequenceLength == null ? {
+		                    [doc.chr_GenIndex]: dat[doc.chr_GenIndex],
+		                    chr_MarkerType: doc.chr_MarkerType,
+		                    chr_NumberOfLoci: doc.chr_NumberOfLoci,
+		                    chr_GenoTech: doc.chr_GenoTech
+		                } : {
+		                    [doc.chr_GenIndex]: dat[doc.chr_GenIndex],
+		                    chr_MarkerType: doc.chr_MarkerType,
+		                    chr_NumberOfLoci: doc.chr_NumberOfLoci,
+		                    chr_SequenceLength: doc.chr_SequenceLength,
+		                    chr_GenoTech: doc.chr_GenoTech
+		                }
+		            }
+		        )
+		    
+		    RETURN MERGE(
+		        UNSET(dat, APPEND(attrs, idx)),
+		        MERGE_RECURSIVE(meta)
+		    )
 		`
 	}
 	else
