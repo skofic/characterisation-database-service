@@ -48,6 +48,10 @@ const QueryParameters = [
 ]
 
 ///
+// Collections and views.
+///
+
+///
 // Router.
 ///
 const router = createRouter()
@@ -65,47 +69,13 @@ router.tag('Data')
 
 
 /**
- * Query data.
+ * All dataset data.
  *
- * The service allows selecting data based on a series of selection criteria,
- * it will return the list of matching data records.
- */
-router.post(
-	'query/:op',
-	(req, res) => {
-		try{
-			res.send(searchData(req, res))
-		} catch (error) {
-			throw error                                                         // ==>
-		}
-	},
-	'queryData'
-)
-	.summary('Query data')
-	.description(dd`
-		Retrieve data records based on a set of query parameters, fill body with selection \
-		criteria and the service will return matching list of data records.
-	`)
-
-	.pathParam('op', opSchema)
-	.body(ModelQuery, dd`
-		The body is an object that contains the query parameters:
-		- \`std_dataset_id\`: Dataset unique identifier, provide a list of matching dataset keys.
-		- \`gcu_id_number\`: GCU identifier, provide a wildcard search string.
-		- \`std_date\`: Data measurement date range, provide start and end dates with inclusion flags.
-		- \`species\`: Scientific name, provide space delimited keywords.
-		- \`tree_code\`: Tree identifier codes, provide list of tree codes.
-		Omit the properties that you don't want to search on.
-	`)
-	.response([Model])
-
-/**
- * Dataset data.
- *
- * The service allows selecting data from the provided dataset identifier.
+ * The service will return all data belonging to the provided dataset identifier,
+ * the service also allows limiting data results.
  */
 router.get(
-	'dataset/:dataset/:start/:limit',
+	':dataset/:start/:limit',
 	(req, res) => {
 		try{
 			res.send(datasetData(req, res))
@@ -113,7 +83,7 @@ router.get(
 			throw error                                                         // ==>
 		}
 	},
-	'datasetData'
+	'allDatasetData'
 )
 	.summary('Get all dataset data records')
 	.description(dd`
@@ -127,6 +97,44 @@ router.get(
 
 	.response([Model])
 
+/**
+ * Query dataset data.
+ *
+ * The service will return data belonging to the provided dataset identifier
+ * according to the provided query parameters, the service also allows limiting
+ * data results.
+ */
+router.post(
+	'query/:dataset/:op/:start/:limit',
+	(req, res) => {
+		try{
+			res.send(searchData(req, res))
+		} catch (error) {
+			throw error                                                         // ==>
+		}
+	},
+	'queryDatasetData'
+)
+	.summary('Query data')
+	.description(dd`
+		The service will allow querying the data elements belonging to the provided dataset.
+	`)
+
+	.pathParam('dataset', datasetSchema)
+	.pathParam('op', opSchema)
+	.pathParam('start', queryStartSchema)
+	.pathParam('limit', queryLimitSchema)
+
+	.body(ModelQuery, dd`
+		The body is an object that contains the query parameters:
+		- \`gcu_id_number\`: GCU identifier, provide a wildcard search string.
+		- \`std_date\`: Data measurement date range, provide start and end dates with inclusion flags.
+		- \`species\`: Scientific name, provide space delimited keywords.
+		- \`tree_code\`: Tree identifier codes, provide list of tree codes.
+		Omit the properties that you don't want to search on.
+	`)
+	.response([Model])
+
 
 /**
  * HANDLERS
@@ -134,48 +142,7 @@ router.get(
 
 
 /**
- * Search data and return matching records.
- *
- * This service allows querying data based on a set oc search criteria,
- * and will return the matching data records.
- *
- * @param request
- * @param response
- * @returns {[Object]}
- */
-function searchData(request, response)
-{
-	///
-	// Get chain operator.
-	///
-	const op = request.pathParams.op
-
-	///
-	// Get query filters.
-	//
-	const filters = dataQueryFilters(request, response)
-	if(filters.length === 0) {
-		return []                                                               // ==>
-	}
-
-	///
-	// Build filters block.
-	///
-	const query = aql`
-		FOR doc IN VIEW_DATA
-			SEARCH ${aql.join(filters, ` ${op} `)}
-		RETURN doc
-	`
-
-	///
-	// Query.
-	///
-	return db._query(query).toArray()                                           // ==>
-
-} // searchData()
-
-/**
- * Return dataset data records.
+ * Return all dataset data records.
  *
  * This service expects a dataset identifier as a path parameter,
  * and will return all data records belonging to that dataset.
@@ -199,8 +166,8 @@ function datasetData(request, response)
 	// Determine dataset type.
 	///
 	const query = aql`
-		FOR set IN dataset
-		    FILTER set._key == ${dset}
+		FOR set IN VIEW_DATASET
+		    SEARCH set._key == ${dset}
 		    
 		    LET markers = HAS(set, 'std_dataset_markers')
 		                ? set.std_dataset_markers
@@ -248,6 +215,89 @@ function datasetData(request, response)
 	return db._query(query).toArray()                                           // ==>
 
 } // datasetData()
+
+/**
+ * Search data and return matching records.
+ *
+ * This service allows querying data based on a set oc search criteria,
+ * and will return the matching data records.
+ *
+ * @param request
+ * @param response
+ * @returns {[Object]}
+ */
+function searchData(request, response)
+{
+	///
+	// Get chain operator.
+	///
+	const op = request.pathParams.op
+	const dataset = request.pathParams.dataset
+	const start = request.pathParams.start
+	const limit = request.pathParams.limit
+
+	///
+	// Get query filters.
+	//
+	const filters = dataQueryFilters(request, response)
+	if(filters.length === 0) {
+		return []                                                               // ==>
+	}
+
+	///
+	// Build filters block.
+	///
+	const query = aql`
+		FOR set IN VIEW_DATASET
+		    SEARCH set._key == ${dataset}
+		    
+		    LET markers = HAS(set, 'std_dataset_markers')
+		                ? set.std_dataset_markers
+		                : []
+		
+		    FOR dat IN VIEW_DATA
+		        SEARCH dat.std_dataset_id == set._key AND
+				       ( ${aql.join(filters, ` ${op} `)} )
+		        LIMIT ${start}, ${limit}
+		
+		        LET meta = (
+		            FOR doc IN markers
+		                FILTER doc.species == dat.species
+		                
+		            RETURN {
+		                [CONCAT_SEPARATOR("_", doc.chr_GenIndex, "marker")]: doc.chr_SequenceLength == null ? {
+		                    [doc.chr_GenIndex]: dat[doc.chr_GenIndex],
+		                    chr_MarkerType: doc.chr_MarkerType,
+		                    chr_NumberOfLoci: doc.chr_NumberOfLoci,
+		                    chr_GenoTech: doc.chr_GenoTech
+		                } : {
+		                    [doc.chr_GenIndex]: dat[doc.chr_GenIndex],
+		                    chr_MarkerType: doc.chr_MarkerType,
+		                    chr_NumberOfLoci: doc.chr_NumberOfLoci,
+		                    chr_SequenceLength: doc.chr_SequenceLength,
+		                    chr_GenoTech: doc.chr_GenoTech
+		                }
+		            }
+		        )
+		
+		    RETURN MERGE(
+		        UNSET(
+		            dat,
+		            APPEND(
+		                ["_id", "_key", "_rev", "std_dataset_id"],
+		                set.std_dataset_markers[*].chr_GenIndex
+		            )
+		        ),
+		        MERGE_RECURSIVE(meta)
+		    )
+	`
+
+	///
+	// Query.
+	///
+	return db._query(query).toArray()                                           // ==>
+
+} // searchData()
 
 
 /**
@@ -304,19 +354,19 @@ function dataQueryFilters(request, response)
 			// Match values.
 			case 'std_dataset_id':
 			case 'tree_code':
-				parts.push(aql`doc[${key}] IN ${value}`)
+				parts.push(aql`dat[${key}] IN ${value}`)
 				break
 			// Match value string.
 			case 'gcu_id_number':
-				parts.push(aql`LIKE(doc[${key}], ${value})`)
+				parts.push(aql`LIKE(dat[${key}], ${value})`)
 				break
 			// Match dates.
 			case 'std_date':
-				parts.push(aql`IN_RANGE(doc[${key}], ${value.start}, ${value.end}, ${value.include_start}, ${value.include_end})`)
+				parts.push(aql`IN_RANGE(dat[${key}], ${value.start}, ${value.end}, ${value.include_start}, ${value.include_end})`)
 				break
 			// Match text.
 			case 'species':
-				parts.push(aql`ANALYZER(doc[${key}] IN TOKENS(${value}, "text_en"), "text_en")`)
+				parts.push(aql`ANALYZER(dat[${key}] IN TOKENS(${value}, "text_en"), "text_en")`)
 				break
 		}
 	}

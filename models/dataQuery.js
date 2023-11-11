@@ -12,9 +12,6 @@ module.exports = {
 
 	schema: joi.object({
 		// Describe the attributes with joi here
-		std_dataset_id: joi.array()
-			.items(joi.string())
-			.description("Dataset identifiers"),
 		gcu_id_number: joi.string()
 			.description("GCU identifier wildcard"),
 		std_date: joi.object({
