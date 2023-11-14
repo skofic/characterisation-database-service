@@ -18,11 +18,15 @@ const createRouter = require('@arangodb/foxx/router')
 ///
 const Model = require('../models/dataset')
 const ModelQuery = require('../models/datasetQuery')
+const ModelQualifications = require('../models/datasetQualifications')
 const opSchema = joi.string()
 	.valid("AND", "OR")
 	.default("AND")
 	.required()
 	.description('Chaining operator for query filters')
+const keySchema = joi.string()
+	.required()
+	.description('The dataset key')
 const keyListSchema = joi.array()
 	.items(joi.string())
 	.required()
@@ -35,7 +39,7 @@ const QueryParameters = [
 	"_key",
 	"std_project", "std_dataset",
 	"std_date", "std_date_submission",
-	"_subject", "_domain", "_tag",
+	"_domain", "_tag", "_subjects", "_classes",
 	"std_terms",
 	"_title", "_description"
 ]
@@ -88,9 +92,10 @@ router.post(
 		- \`std_dataset\`: Dataset code, provide a wildcard search string.
 		- \`std_date\`: Dataset date range, provide start and end dates with inclusion flags.
 		- \`std_date_submission\`: Dataset submission date range, provide start and end dates with inclusion flags.
-		- \`_subject\`: Dataset data subjects, provide list of subject codes.
 		- \`_domain\`: Dataset data domains, provide list of domain codes.
 		- \`_tag\`: Dataset data tags, provide list of tag codes.
+		- \`_subjects\`: Dataset data subjects, provide list of subject codes.
+		- \`_classes\`: Dataset data subjects, provide list of subject codes.
 		- \`std_terms\`: Dataset data descriptors, provide list of global identifiers.
 		- \`_title\`: Dataset data title text, provide space delimited keywords.
 		- \`_description\`: Dataset data description text, provide space delimited keywords.
@@ -129,15 +134,47 @@ router.post(
 		- \`std_dataset\`: Dataset code, provide a wildcard search string.
 		- \`std_date\`: Dataset date range, provide start and end dates with inclusion flags.
 		- \`std_date_submission\`: Dataset submission date range, provide start and end dates with inclusion flags.
-		- \`_subject\`: Dataset data subjects, provide list of subject codes.
 		- \`_domain\`: Dataset data domains, provide list of domain codes.
 		- \`_tag\`: Dataset data tags, provide list of tag codes.
+		- \`_subjects\`: Dataset data subjects, provide list of subject codes.
+		- \`_classes\`: Dataset data subjects, provide list of subject codes.
 		- \`std_terms\`: Dataset data descriptors, provide list of global identifiers.
 		- \`_title\`: Dataset data title text, provide space delimited keywords.
 		- \`_description\`: Dataset data description text, provide space delimited keywords.
 		Omit the properties that you don't want to search on.
 	`)
 	.response([Model])
+
+/**
+ * Get dataset data descriptor qualifications.
+ *
+ * The service will return the list of classes, domains,tags and subjects
+ * belonging to the provided dataset descriptors. The service will also return
+ * the list of descriptors comprising the data of the dataset.
+ *
+ * Note that these qualifications are part of the dataset record, this service
+ * will return the refreshed list of qualifications according only to the dataset's
+ * data.
+ */
+router.get(
+	'qual/:key',
+	(req, res) => {
+		try{
+			res.send(getDatasetQualifications(req, res))
+		} catch (error) {
+			throw error                                                         // ==>
+		}
+	},
+	'getDatasetQualifications'
+)
+	.summary('Get dataset qualifications')
+	.description(dd`
+		Retrieve dataset objects based on a set of query parameters, fill body with selection \
+		criteria and the service will return matching list of dataset objects.
+	`)
+
+	.pathParam('key', keySchema)
+	.response([ModelQualifications])
 
 
 /**
@@ -227,6 +264,69 @@ function searchDatasetObjects(request, response)
 
 } // searchDatasetObjects()
 
+/**
+ * Get dataset data qualifications.
+ *
+ * This function will collect all descriptors of the dataset's data and return
+ * the aggregated catalogue of all descriptor classes, domains, tags, subjects
+ * and the list of descriptors.
+ *
+ * @param request
+ * @param response
+ * @returns {[Object]}
+ */
+function getDatasetQualifications(request, response)
+{
+	///
+	// Get chain operator.
+	///
+	const key = request.pathParams.key
+
+	///
+	// Build filters block.
+	///
+	const query = aql`
+		FOR dset IN VIEW_DATASET
+		    SEARCH dset._key == ${key}
+		    
+		    LET descriptors = (
+		        FOR dat IN VIEW_DATA
+		            SEARCH dat.std_dataset_id == dset._key
+		            COLLECT AGGREGATE vars = UNIQUE(ATTRIBUTES(dat, true))
+		        RETURN REMOVE_VALUE(UNIQUE(FLATTEN(vars)), 'std_dataset_id')
+		    )[0]
+		    
+		    LET categories = (
+		        FOR key IN descriptors
+		            FOR doc IN terms
+		                FILTER doc._key IN dset.std_terms
+		                FILTER HAS(doc,'_data')
+		                
+		                COLLECT AGGREGATE classes = UNIQUE(doc._data._class),
+		                                  domains = UNIQUE(doc._data._domain),
+		                                  tags = UNIQUE(doc._data._tag),
+		                                  subjects = UNIQUE(doc._data._subject)
+		            RETURN {
+		                _classes: REMOVE_VALUE(classes, null),
+		                _domain: REMOVE_VALUE(FLATTEN(domains), null),
+		                _tag: UNIQUE(REMOVE_VALUE(FLATTEN(tags), null)),
+		                _subjects: REMOVE_VALUE(subjects, null)
+		            }
+		    )[0]
+		
+		RETURN MERGE(
+		    categories,
+		    { std_terms: descriptors }
+		)
+	`
+
+	///
+	// Query.
+	///
+	return db._query(query).toArray()                                           // ==>
+
+} // getDatasetQualifications()
+
 
 /**
  * UTILITIES
@@ -284,9 +384,10 @@ function datasetQueryFilters(request, response)
 			// Match values.
 			case '_key':
 			case 'std_project':
-			case '_subject':
 			case "_domain":
 			case "_tag":
+			case '_subjects':
+			case '_classes':
 			case "std_terms":
 				parts.push(aql`doc[${key}] IN ${value}`)
 				break

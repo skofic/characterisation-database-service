@@ -40,18 +40,21 @@ module.exports = {
 			include_end: joi.boolean()
 				.required()
 		}).description("Dataset submission date range"),
-		_subject: joi.array()
-			.items(joi.string())
-			.description("Dataset measurement subjects"),
 		_domain: joi.array()
 			.items(joi.string())
-			.description("Dataset tags"),
+			.description("Data tags"),
 		_tag: joi.array()
 			.items(joi.string())
-			.description("Dataset data domains"),
+			.description("Data domains"),
+		_subjects: joi.array()
+			.items(joi.string())
+			.description("Data measurement subjects"),
+		_classes: joi.array()
+			.items(joi.string())
+			.description("Data classes"),
 		std_terms: joi.array()
 			.items(joi.string())
-			.description("Dataset data variables"),
+			.description("Data variables"),
 		_title: joi.string()
 			.description("Dataset title tokens"),
 		_description: joi.string()

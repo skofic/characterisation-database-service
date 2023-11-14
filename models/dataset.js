@@ -21,10 +21,6 @@ module.exports = {
 		std_dataset: joi.string()
 			.required()
 			.description("The dataset's code or acronym"),
-		_subject: joi.string()
-			.required()
-			.valid('stand', 'tree')
-			.description("Dataset measurements subject"),
 		std_date: joi.string()
 			.required()
 			.regex(/^[0-9]+$/)
@@ -46,11 +42,21 @@ module.exports = {
 		_domain: joi.array()
 			.required()
 			.items(joi.string())
-			.description("Dataset domains"),
+			.description("Data domains"),
+		_tag: joi.array()
+			.items(joi.string())
+			.description("Data tags"),
+		_subjects: joi.string()
+			.required()
+			.description("Data subject"),
+		_classes: joi.array()
+			.required()
+			.items(joi.string())
+			.description("Data descriptor classes"),
 		std_terms: joi.array()
 			.required()
 			.items(joi.string())
-			.description("Dataset terms"),
+			.description("Data descriptors"),
 		std_dataset_markers: joi.array()
 			.optional()
 			.items(
