@@ -171,6 +171,8 @@ router.get(
 	.description(dd`
 		Retrieve dataset objects based on a set of query parameters, fill body with selection \
 		criteria and the service will return matching list of dataset objects.
+		Note that this data is already in the dataset record, this service will \
+		return this data dynamically by probin the dataset data records.
 	`)
 
 	.pathParam('key', keySchema)
