@@ -12,6 +12,10 @@ module.exports = {
 
 	schema: joi.object({
 		// Describe the attributes with joi here
+		_classes: joi.array()
+			.required()
+			.items(joi.string())
+			.description("Data descriptor classes"),
 		_domain: joi.array()
 			.required()
 			.items(joi.string())
@@ -19,14 +23,19 @@ module.exports = {
 		_tag: joi.array()
 			.items(joi.string())
 			.description("Data tags"),
-		_subjects: joi.string()
-			.required()
-			.description("Data subject"),
-		_classes: joi.array()
+		_subjects: joi.array()
 			.required()
 			.items(joi.string())
-			.description("Data descriptor classes")
-	}).unknown(true),
+			.description("Data subject"),
+		std_terms: joi.array()
+			.required()
+			.items(joi.string())
+			.description("List of descriptors"),
+		std_terms_quant: joi.array()
+			.required()
+			.items(joi.string())
+			.description("List of quantitative descriptors")
+	}),
 
 	forClient(obj) {
 		// Implement outgoing transformations here

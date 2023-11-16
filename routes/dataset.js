@@ -18,7 +18,7 @@ const createRouter = require('@arangodb/foxx/router')
 ///
 const Model = require('../models/dataset')
 const ModelQuery = require('../models/datasetQuery')
-const ModelQualifications = require('../models/datasetQualifications')
+const ModelCategories = require('../models/datasetCategories')
 const opSchema = joi.string()
 	.valid("AND", "OR")
 	.default("AND")
@@ -160,23 +160,23 @@ router.get(
 	'qual/:key',
 	(req, res) => {
 		try{
-			res.send(getDatasetQualifications(req, res))
+			res.send(getDatasetCategories(req, res))
 		} catch (error) {
 			throw error                                                         // ==>
 		}
 	},
-	'getDatasetQualifications'
+	'getDatasetCategories'
 )
-	.summary('Get dataset qualifications')
+	.summary('Get dataset data categories')
 	.description(dd`
 		Retrieve dataset objects based on a set of query parameters, fill body with selection \
 		criteria and the service will return matching list of dataset objects.
 		Note that this data is already in the dataset record, this service will \
-		return this data dynamically by probin the dataset data records.
+		return this data dynamically by probing the dataset data records.
 	`)
 
 	.pathParam('key', keySchema)
-	.response([ModelQualifications])
+	.response([ModelCategories])
 
 
 /**
@@ -277,7 +277,7 @@ function searchDatasetObjects(request, response)
  * @param response
  * @returns {[Object]}
  */
-function getDatasetQualifications(request, response)
+function getDatasetCategories(request, response)
 {
 	///
 	// Get chain operator.
@@ -297,6 +297,14 @@ function getDatasetQualifications(request, response)
 		            COLLECT AGGREGATE vars = UNIQUE(ATTRIBUTES(dat, true))
 		        RETURN REMOVE_VALUE(UNIQUE(FLATTEN(vars)), 'std_dataset_id')
 		    )[0]
+		    
+		    LET quantities = (
+		        FOR var IN descriptors
+		            FOR des IN terms
+		                FILTER des._key == var
+		                FILTER des._data._class IN ["_class_quantity", "_class_quantity_calculated", "_class_quantity_averaged"]
+		            RETURN des._key
+		    )
 		    
 		    LET categories = (
 		        FOR key IN descriptors
@@ -318,7 +326,8 @@ function getDatasetQualifications(request, response)
 		
 		RETURN MERGE(
 		    categories,
-		    { std_terms: descriptors }
+		    { std_terms: descriptors },
+		    { std_terms_quant: quantities }
 		)
 	`
 
@@ -327,7 +336,7 @@ function getDatasetQualifications(request, response)
 	///
 	return db._query(query).toArray()                                           // ==>
 
-} // getDatasetQualifications()
+} // getDatasetCategories()
 
 
 /**
