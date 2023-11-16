@@ -309,8 +309,7 @@ function getDatasetCategories(request, response)
 		    LET categories = (
 		        FOR key IN descriptors
 		            FOR doc IN terms
-		                FILTER doc._key IN dset.std_terms
-		                FILTER HAS(doc,'_data')
+		                FILTER doc._key IN descriptors
 		                
 		                COLLECT AGGREGATE classes = UNIQUE(doc._data._class),
 		                                  domains = UNIQUE(doc._data._domain),
