@@ -316,10 +316,10 @@ function getDatasetCategories(request, response)
 		                                  tags = UNIQUE(doc._data._tag),
 		                                  subjects = UNIQUE(doc._data._subject)
 		            RETURN {
-		                _classes: REMOVE_VALUE(classes, null),
-		                _domain: REMOVE_VALUE(FLATTEN(domains), null),
+		                _classes: UNIQUE(REMOVE_VALUE(classes, null)),
+		                _domain: UNIQUE(REMOVE_VALUE(FLATTEN(domains), null)),
 		                _tag: UNIQUE(REMOVE_VALUE(FLATTEN(tags), null)),
-		                _subjects: REMOVE_VALUE(subjects, null)
+		                _subjects: UNIQUE(REMOVE_VALUE(subjects, null))
 		            }
 		    )[0]
 		
