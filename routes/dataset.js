@@ -291,42 +291,43 @@ function getDatasetCategories(request, response)
 		FOR dset IN VIEW_DATASET
 		    SEARCH dset._key == ${key}
 		    
-		    LET descriptors = (
+		    LET data = (
 		        FOR dat IN VIEW_DATA
 		            SEARCH dat.std_dataset_id == dset._key
-		            COLLECT AGGREGATE vars = UNIQUE(ATTRIBUTES(dat, true))
-		        RETURN REMOVE_VALUE(UNIQUE(FLATTEN(vars)), 'std_dataset_id')
+		            COLLECT AGGREGATE vars = UNIQUE(ATTRIBUTES(dat, true)),
+		                              items = COUNT()
+		        RETURN {
+		            count: items,
+		            std_terms: REMOVE_VALUE(UNIQUE(FLATTEN(vars)), 'std_dataset_id')
+		        }
 		    )[0]
 		    
-		    LET quantities = (
-		        FOR var IN descriptors
-		            FOR des IN terms
-		                FILTER des._key == var
-		                FILTER des._data._class IN ["_class_quantity", "_class_quantity_calculated", "_class_quantity_averaged"]
-		            RETURN des._key
+		    LET quantitative = (
+		        FOR doc IN terms
+		            FILTER doc._key IN data.std_terms
+		            FILTER doc._data._class IN ["_class_quantity", "_class_quantity_calculated", "_class_quantity_averaged"]
+		        RETURN doc._key
 		    )
-		    
+		
 		    LET categories = (
-		        FOR key IN descriptors
-		            FOR doc IN terms
-		                FILTER doc._key IN descriptors
-		                
-		                COLLECT AGGREGATE classes = UNIQUE(doc._data._class),
-		                                  domains = UNIQUE(doc._data._domain),
-		                                  tags = UNIQUE(doc._data._tag),
-		                                  subjects = UNIQUE(doc._data._subject)
-		            RETURN {
-		                _classes: UNIQUE(REMOVE_VALUE(classes, null)),
-		                _domain: UNIQUE(REMOVE_VALUE(FLATTEN(domains), null)),
-		                _tag: UNIQUE(REMOVE_VALUE(FLATTEN(tags), null)),
-		                _subjects: UNIQUE(REMOVE_VALUE(subjects, null))
-		            }
+		        FOR doc IN terms
+		            FILTER doc._key IN data.std_terms
+		            COLLECT AGGREGATE classes = UNIQUE(doc._data._class),
+		                              domains = UNIQUE(doc._data._domain),
+		                              tags = UNIQUE(doc._data._tag),
+		                              subjects = UNIQUE(doc._data._subject)
+		        RETURN {
+		            _classes: UNIQUE(REMOVE_VALUE(classes, null)),
+		            _domain: UNIQUE(REMOVE_VALUE(FLATTEN(domains), null)),
+		            _tag: UNIQUE(REMOVE_VALUE(FLATTEN(tags), null)),
+		            _subjects: UNIQUE(REMOVE_VALUE(subjects, null))
+		        }
 		    )[0]
 		
 		RETURN MERGE(
+			data,
 		    categories,
-		    { std_terms: descriptors },
-		    { std_terms_quant: quantities }
+		    { std_terms_quant: quantitative }
 		)
 	`
 

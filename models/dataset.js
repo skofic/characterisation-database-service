@@ -39,6 +39,10 @@ module.exports = {
 		})
 			.required()
 			.description("Dataset description"),
+		count: joi.number()
+			.required()
+			.integer()
+			.description("Number of data records in dataset."),
 		_domain: joi.array()
 			.required()
 			.items(joi.string())

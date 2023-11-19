@@ -12,6 +12,10 @@ module.exports = {
 
 	schema: joi.object({
 		// Describe the attributes with joi here
+		count: joi.number()
+			.required()
+			.integer()
+			.description("Number of data records in dataset."),
 		_classes: joi.array()
 			.required()
 			.items(joi.string())
