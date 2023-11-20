@@ -11,18 +11,34 @@
 const dd = require('dedent')
 const joi = require('joi')
 const {aql, db} = require('@arangodb')
+const httpError = require('http-errors')
 const createRouter = require('@arangodb/foxx/router')
+
+///
+// Database globals.
+///
+const database = require('../globals/database')
 
 ///
 // Globals.
 ///
 const Model = require('../models/data')
 const ModelQuery = require('../models/dataQuery')
+const ErrorModel = require("../models/error_generic");
 const opSchema = joi.string()
 	.valid('AND', 'OR')
 	.default('AND')
 	.required()
 	.description("Chaining operator for query filters")
+const opSummary = joi.string()
+	.valid('MIN', 'MAX', 'AVG', 'MEDIAN', 'STDDEV', 'VARIANCE')
+	.default('AVG')
+	.required()
+	.description("MIN: minimum; MAX: maximum; AVG: average; MEDIAN: median; STDDEV: standard deviation; VARIANCE: variance")
+const opPivot = joi.string()
+	.default('species')
+	.required()
+	.description("Descriptor global identifier on which to summarise data")
 const datasetSchema = joi.string()
 	.required()
 	.description("The dataset identifier")
@@ -50,6 +66,8 @@ const QueryParameters = [
 ///
 // Collections and views.
 ///
+const collection_dataset = db._collection(database.documentCollections.dataset)
+
 
 ///
 // Router.
@@ -96,6 +114,36 @@ router.get(
 	.pathParam('limit', queryLimitSchema)
 
 	.response([Model])
+
+/**
+ * Dataset data statistics.
+ *
+ * The service will return dataset statistics if possible.
+ */
+router.get(
+	':dataset/:stat/:pivot',
+	(req, res) => {
+		try{
+			res.send(datasetSummary(req, res))
+		} catch (error) {
+			throw error                                                         // ==>
+		}
+	},
+	'datasetSummaryData'
+)
+	.summary('Get dataset summary data')
+	.description(dd`
+		Retrieve dataset summary data.
+		Provide the dataset identifier, the summary statistic and the descriptor global identifier on which to summarise in the path parameters.
+	`)
+
+	.pathParam('dataset', datasetSchema)
+	.pathParam('stat', opSummary)
+	.pathParam('pivot', opPivot)
+
+	.response([joi.object()])
+	.response(404, ErrorModel, "Dataset not found.")
+	.response(400, ErrorModel, "All other user errors.")
 
 /**
  * Query dataset data.
@@ -217,6 +265,63 @@ function datasetData(request, response)
 } // datasetData()
 
 /**
+ * Return dataset data summary.
+ *
+ * This service expects a dataset identifier, a summary statistic
+ * and a field global identifier as path parameters.
+ *
+ * It will return the statistics indicated by the path parameter
+ * on the field passed as a path parameter.
+ *
+ * @param request
+ * @param response
+ * @returns {[Object]}
+ */
+function datasetSummary(request, response)
+{
+	///
+	// Globals.
+	///
+	let result
+
+	///
+	// Get parameters.
+	///
+	const dset = request.pathParams.dataset
+	const stat = request.pathParams.stat
+	const pivot = request.pathParams.pivot
+
+	///
+	// Get dataset.
+	///
+	const dataset = collection_dataset.document(dset)
+
+	///
+	// Check number of indexes.
+	///
+	if(dataset.std_terms_key.length < 2) {
+		throw httpError(400, `Data must be indexed by at least two fields.`)    // ==>
+	}
+
+	///
+	// Check pivot.
+	///
+	if(!dataset.std_terms_key.includes(pivot)) {
+		throw httpError(400, `Descriptor ${pivot} not a key field.`)            // ==>
+	}
+
+	///
+	// Handle genetic indexes.
+	///
+	if(dataset.hasOwnProperty('std_dataset_markers')) {
+		return datasetGeneticSummary(request, response, dataset, stat, pivot)   // ==>
+	}
+
+	return datasetDataSummary(request, response, dataset, stat, pivot)          // ==>
+
+} // datasetSummary()
+
+/**
  * Search data and return matching records.
  *
  * This service allows querying data based on a set oc search criteria,
@@ -304,6 +409,184 @@ function searchData(request, response)
  * UTILITIES
  */
 
+
+/**
+ * Return dataset summary.
+ *
+ * This function will return summary data for the dataset.
+ *
+ * @param request {Object}: Service request.
+ * @param response {Object}: Service response.
+ * @param theDataset {Object}: Dataset record.
+ * @param theSummary {String}: Summary statistic function name.
+ * @param theField {String}: Pivot descriptor global identifier.
+ * @returns {[Object]}: Array of summary data.
+ */
+function datasetDataSummary(
+	request,
+	response,
+	theDataset,
+	theSummary,
+	theField)
+{
+	///
+	// Save summary fragment.
+	///
+	let stat
+	switch(theSummary) {
+		case 'MIN':
+			stat = aql`MIN(groups[*].dat[field])`
+			break
+		case 'MAX':
+			stat = aql`MAX(groups[*].dat[field])`
+			break
+		case 'AVG':
+			stat = aql`AVG(groups[*].dat[field])`
+			break
+		case 'MEDIAN':
+			stat = aql`MEDIAN(groups[*].dat[field])`
+			break
+		case 'STDDEV':
+			stat = aql`STDDEV(groups[*].dat[field])`
+			break
+		case 'VARIANCE':
+			stat = aql`VARIANCE(groups[*].dat[field])`
+			break
+		default:
+			throw httpError(400, `Invalid summary ${theSummary}.`)
+	}
+
+	///
+	// Make summary.
+	///
+	const query = aql`
+	    FOR dat IN VIEW_DATA
+	        SEARCH dat.std_dataset_id == ${theDataset._key}
+	        
+	        COLLECT summary = dat[${theField}]
+	        INTO groups
+	        
+	        LET quants = (
+	            FOR field IN ${theDataset.std_terms_quant}
+	            RETURN {
+	                [field]: ${stat}
+	            }
+	        )
+	
+	    RETURN MERGE(
+	        { [${theField}]: summary },
+	        MERGE_RECURSIVE(quants)
+	    )
+	`
+
+	///
+	// Query.
+	///
+	return db._query(query).toArray()                                           // ==>
+
+} // datasetDataSummary()
+
+/**
+ * Return genetic index summary.
+ *
+ * This function will return summary data for genetic indexes.
+ *
+ * @param request {Object}: Service request.
+ * @param response {Object}: Service response.
+ * @param theDataset {Object}: Dataset record.
+ * @param theSummary {String}: Summary statistic function name.
+ * @param theField {String}: Pivot descriptor global identifier.
+ * @returns {[Object]}: Array of summary data.
+ */
+function datasetGeneticSummary(
+	request,
+	response,
+	theDataset,
+	theSummary,
+	theField)
+{
+	///
+	// Enforce species as pivot.
+	//
+	if(theField !== 'species') {
+		throw httpError(400, `You can only get summary by species.`)            // ==>
+	}
+
+	///
+	// Save summary fragment.
+	///
+	let stat
+	switch(theSummary) {
+		case 'MIN':
+			stat = aql`MIN(groups[*].dat[doc.chr_GenIndex])`
+			break
+		case 'MAX':
+			stat = aql`MAX(groups[*].dat[doc.chr_GenIndex])`
+			break
+		case 'AVG':
+			stat = aql`AVG(groups[*].dat[doc.chr_GenIndex])`
+			break
+		case 'MEDIAN':
+			stat = aql`MEDIAN(groups[*].dat[doc.chr_GenIndex])`
+			break
+		case 'STDDEV':
+			stat = aql`STDDEV(groups[*].dat[doc.chr_GenIndex])`
+			break
+		case 'VARIANCE':
+			stat = aql`VARIANCE(groups[*].dat[doc.chr_GenIndex])`
+			break
+		default:
+			throw httpError(400, `Invalid summary ${theSummary}.`)
+	}
+
+	///
+	// Make summary.
+	///
+	const query = aql`
+	    LET items = (
+	        FOR dat IN VIEW_DATA
+	            SEARCH dat.std_dataset_id == ${theDataset._key}
+	            COLLECT species = dat.species
+	            INTO groups
+	            
+	        FOR doc IN ${theDataset.std_dataset_markers}
+	            FILTER doc.species == species
+	    
+	        RETURN {
+	            species: species,
+	            properties: {
+	                [CONCAT_SEPARATOR("_", doc.chr_GenIndex, "marker")]: doc.chr_SequenceLength == null ? {
+	                    [doc.chr_GenIndex]: ${stat},
+	                    chr_MarkerType: doc.chr_MarkerType,
+	                    chr_NumberOfLoci: doc.chr_NumberOfLoci,
+	                    chr_GenoTech: doc.chr_GenoTech
+	                } : {
+	                    [doc.chr_GenIndex]: ${stat},
+	                    chr_MarkerType: doc.chr_MarkerType,
+	                    chr_NumberOfLoci: doc.chr_NumberOfLoci,
+	                    chr_SequenceLength: doc.chr_SequenceLength,
+	                    chr_GenoTech: doc.chr_GenoTech
+	                }
+	            }
+	        }
+	    )
+		
+		FOR item IN items
+		    COLLECT species = item.species
+		    INTO groups
+		    
+		RETURN MERGE(
+			{ species: species },
+			MERGE_RECURSIVE(groups[*].item.properties)
+		)
+	`
+
+	///
+	// Query.
+	///
+	return db._query(query).toArray()                                           // ==>
+
+} // datasetGeneticSummary()
 
 /**
  * Return data query filters.
