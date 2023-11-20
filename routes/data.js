@@ -468,9 +468,8 @@ function datasetDataSummary(
 	        
 	        LET quants = (
 	            FOR field IN ${theDataset.std_terms_quant}
-	            RETURN {
-	                [field]: ${stat}
-	            }
+	            LET value = ${stat}
+	            RETURN value != null ? { [field]: ${stat} } : {}
 	        )
 	
 	    RETURN MERGE(
