@@ -294,14 +294,7 @@ function datasetSummary(request, response)
 	///
 	// Get dataset.
 	///
-	const temp = db._query(
-		aql`FOR doc IN dataset FILTER doc._key == ${dset} RETURN doc`
-	).toArray()
-	if(temp.length === 0) {
-		throw httpError(404, `Dataset ${dset} not found.`)                      // ==>
-	}
-	const dataset = temp[0]
-	// const dataset = collection_dataset.document(dset)
+	const dataset = collection_dataset.document(dset)
 
 	///
 	// Check number of indexes.
