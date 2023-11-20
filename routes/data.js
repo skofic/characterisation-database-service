@@ -60,7 +60,7 @@ const QueryParameters = [
 	'std_dataset_id', 'gcu_id_number',
 	'std_date',
 	'species',
-	'tree_code'
+	'chr_tree_code'
 ]
 
 ///
@@ -178,7 +178,7 @@ router.post(
 		- \`gcu_id_number\`: GCU identifier, provide a wildcard search string.
 		- \`std_date\`: Data measurement date range, provide start and end dates with inclusion flags.
 		- \`species\`: Scientific name, provide space delimited keywords.
-		- \`tree_code\`: Tree identifier codes, provide list of tree codes.
+		- \`chr_tree_code\`: Tree identifier codes, provide list of tree codes.
 		Omit the properties that you don't want to search on.
 	`)
 	.response([Model])
@@ -297,17 +297,17 @@ function datasetSummary(request, response)
 	const dataset = collection_dataset.document(dset)
 
 	///
-	// Check number of indexes.
+	// Check number of summary fields.
 	///
-	if(dataset.std_terms_key.length < 2) {
-		throw httpError(400, `Data must be indexed by at least two fields.`)    // ==>
+	if(!dataset.hasOwnProperty('std_terms_summary')) {
+		throw httpError(400, `You must have at least one summary field.`)       // ==>
 	}
 
 	///
 	// Check pivot.
 	///
-	if(!dataset.std_terms_key.includes(pivot)) {
-		throw httpError(400, `Descriptor ${pivot} not a key field.`)            // ==>
+	if(!dataset.std_terms_summary.includes(pivot)) {
+		throw httpError(400, `Descriptor ${pivot} not a summary field.`)        // ==>
 	}
 
 	///
@@ -635,7 +635,7 @@ function dataQueryFilters(request, response)
 		switch (key) {
 			// Match values.
 			case 'std_dataset_id':
-			case 'tree_code':
+			case 'chr_tree_code':
 				parts.push(aql`dat[${key}] IN ${value}`)
 				break
 			// Match value string.

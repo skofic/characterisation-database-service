@@ -21,10 +21,6 @@ module.exports = {
 		std_dataset: joi.string()
 			.required()
 			.description("The dataset's code or acronym"),
-		std_date: joi.string()
-			.required()
-			.regex(/^[0-9]+$/)
-			.description("Dataset measurements date"),
 		std_date_submission: joi.string()
 			.required()
 			.regex(/^[0-9]+$/)
@@ -40,27 +36,33 @@ module.exports = {
 			.required()
 			.description("Dataset description"),
 		count: joi.number()
-			.required()
 			.integer()
-			.description("Number of data records in dataset."),
-		_domain: joi.array()
+			.description("Number of data records in dataset"),
+		_subject: joi.string()
 			.required()
+			.description("Data subject"),
+		_std_terms_key: joi.array()
+			.required()
+			.items(joi.string())
+			.description("List of fields that make a data entry unique"),
+		std_terms_summary: joi.array()
+			.items(joi.string())
+			.description("List of fields that can be used to make data summaries"),
+		_domain: joi.array()
 			.items(joi.string())
 			.description("Data domains"),
 		_tag: joi.array()
 			.items(joi.string())
 			.description("Data tags"),
-		_subjects: joi.string()
-			.required()
-			.description("Data subject"),
 		_classes: joi.array()
-			.required()
 			.items(joi.string())
 			.description("Data descriptor classes"),
 		std_terms: joi.array()
-			.required()
 			.items(joi.string())
 			.description("Data descriptors"),
+		std_terms_quant: joi.array()
+			.items(joi.string())
+			.description("Quantitative data descriptors"),
 		std_dataset_markers: joi.array()
 			.optional()
 			.items(

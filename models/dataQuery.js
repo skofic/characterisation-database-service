@@ -26,7 +26,7 @@ module.exports = {
 		}).description("Dataset measurement date range"),
 		species: joi.string()
 			.description("Scientific name tokens"),
-		tree_code: joi.array()
+		chr_tree_code: joi.array()
 			.items(joi.string())
 			.description("Tree identifiers")
 	})

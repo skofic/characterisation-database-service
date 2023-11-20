@@ -16,7 +16,6 @@ module.exports = {
         .required()
         .description("Dataset key reference"),
     std_date: joi.string()
-        .required()
         .regex(/^[0-9]+$/)
         .description("Item measurement date"),
     species: joi.string()
@@ -24,7 +23,7 @@ module.exports = {
     gcu_id_number: joi.string()
         .regex(/[A-Z]{3}[0*9]{4}/)
         .description("Gene conservation unit reference"),
-    tree_code: joi.string()
+    chr_tree_code: joi.string()
         .description("Tree identifier")
   }).unknown(true),
 
