@@ -36,9 +36,15 @@ module.exports = {
 			.items(joi.string())
 			.description("List of descriptors"),
 		std_terms_quant: joi.array()
-			.required()
 			.items(joi.string())
-			.description("List of quantitative descriptors")
+			.description("List of quantitative descriptors"),
+		species_list: joi.array()
+			.items(joi.string())
+			.description("List of species in data, if any."),
+		std_date_start: joi.string()
+			.description("Data start date, inclusive."),
+		std_date_end: joi.string()
+			.description("Data end date, inclusive.")
 	}),
 
 	forClient(obj) {

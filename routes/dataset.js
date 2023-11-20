@@ -176,7 +176,7 @@ router.get(
 	`)
 
 	.pathParam('key', keySchema)
-	.response([ModelCategories])
+	.response(ModelCategories)
 
 
 /**
@@ -294,11 +294,17 @@ function getDatasetCategories(request, response)
 		    LET data = (
 		        FOR dat IN VIEW_DATA
 		            SEARCH dat.std_dataset_id == dset._key
-		            COLLECT AGGREGATE vars = UNIQUE(ATTRIBUTES(dat, true)),
-		                              items = COUNT()
+		            COLLECT AGGREGATE items = COUNT(),
+		                              vars = UNIQUE(ATTRIBUTES(dat, true)),
+		                              taxa = UNIQUE(dat.species),
+									  start = MIN(dat.std_date),
+									  end = MAX(dat.std_date)
 		        RETURN {
 		            count: items,
-		            std_terms: REMOVE_VALUE(UNIQUE(FLATTEN(vars)), 'std_dataset_id')
+		            std_terms: REMOVE_VALUE(UNIQUE(FLATTEN(vars)), 'std_dataset_id'),
+		            species_list: taxa,
+		            std_date_start: start,
+		            std_date_end: end
 		        }
 		    )[0]
 		    
@@ -334,7 +340,31 @@ function getDatasetCategories(request, response)
 	///
 	// Query.
 	///
-	return db._query(query).toArray()                                           // ==>
+	const result = db._query(query).toArray()[0]
+
+	///
+	// Clean data.
+	///
+	if(result._tag.length === 0) {
+		delete result._tag
+	}
+	if(result.species_list.length === 1 && result.species_list[0] === null) {
+		delete result.species_list
+	}
+	if(result.std_date_start === null) {
+		delete result.std_date_start
+	}
+	if(result.std_date_end === null) {
+		delete result.std_date_end
+	}
+	if(result.std_terms_quant.length === 0) {
+		delete result.std_terms_quant
+	}
+
+	///
+	// Query.
+	///
+	return result                                                               // ==>
 
 } // getDatasetCategories()
 
