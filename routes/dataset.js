@@ -302,7 +302,7 @@ function getDatasetCategories(request, response)
 		        RETURN {
 		            count: items,
 		            std_terms: REMOVE_VALUE(UNIQUE(FLATTEN(vars)), 'std_dataset_id'),
-		            species_list: taxa,
+		            species_list: REMOVE_VALUE(taxa, null),
 		            std_date_start: start,
 		            std_date_end: end
 		        }
