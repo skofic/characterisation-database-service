@@ -249,7 +249,7 @@ function datasetData(request, response)
 		        UNSET(
 		            dat,
 		            APPEND(
-		                ["_id", "_key", "_rev", "std_dataset_id"],
+		                ["_id", "_key", "_rev", "std_dataset_id", "_private"],
 		                set.std_dataset_markers[*].chr_GenIndex
 		            )
 		        ),
@@ -389,7 +389,7 @@ function searchData(request, response)
 		        UNSET(
 		            dat,
 		            APPEND(
-		                ["_id", "_key", "_rev", "std_dataset_id"],
+		                ["_id", "_key", "_rev", "std_dataset_id", "_private"],
 		                set.std_dataset_markers[*].chr_GenIndex
 		            )
 		        ),

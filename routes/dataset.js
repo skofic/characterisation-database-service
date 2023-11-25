@@ -301,7 +301,7 @@ function getDatasetCategories(request, response)
 									  end = MAX(dat.std_date)
 		        RETURN {
 		            count: items,
-		            std_terms: REMOVE_VALUE(UNIQUE(FLATTEN(vars)), 'std_dataset_id'),
+		            std_terms: REMOVE_VALUES(UNIQUE(FLATTEN(vars)), ['std_dataset_id', '_private']),
 		            species_list: taxa,
 		            std_date_start: start,
 		            std_date_end: end
