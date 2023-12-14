@@ -340,25 +340,33 @@ function getDatasetCategories(request, response)
 	///
 	// Query.
 	///
-	const result = db._query(query).toArray()[0]
+	let result = {}
+	const recs = db._query(query).toArray()
 
 	///
-	// Clean data.
+	// Check result.
 	///
-	if(result._tag.length === 0) {
-		delete result._tag
-	}
-	if(result.species_list.length === 1 && result.species_list[0] === null) {
-		delete result.species_list
-	}
-	if(result.std_date_start === null) {
-		delete result.std_date_start
-	}
-	if(result.std_date_end === null) {
-		delete result.std_date_end
-	}
-	if(result.std_terms_quant.length === 0) {
-		delete result.std_terms_quant
+	if(Object.keys(recs).length !== 0) {
+		result = recs[0]
+
+		///
+		// Clean data.
+		///
+		if(result._tag.length === 0) {
+			delete result._tag
+		}
+		if(result.species_list.length === 1 && result.species_list[0] === null) {
+			delete result.species_list
+		}
+		if(result.std_date_start === null) {
+			delete result.std_date_start
+		}
+		if(result.std_date_end === null) {
+			delete result.std_date_end
+		}
+		if(result.std_terms_quant.length === 0) {
+			delete result.std_terms_quant
+		}
 	}
 
 	///
