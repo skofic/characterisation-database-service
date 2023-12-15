@@ -296,18 +296,18 @@ function getDatasetCategories(request, response)
 		            SEARCH dat.std_dataset_id == dset._key
 		            COLLECT AGGREGATE items = COUNT(),
 		                              vars = UNIQUE(ATTRIBUTES(dat, true)),
-		                              taxa = UNIQUE(dat.species),
+		                              taxa = SORTED_UNIQUE(dat.species),
 									  start = MIN(dat.std_date),
 									  end = MAX(dat.std_date)
 		        RETURN {
 		            count: items,
-		            std_terms: REMOVE_VALUES(UNIQUE(FLATTEN(vars)), ['std_dataset_id', '_private']),
+		            std_terms: REMOVE_VALUES(SORTED_UNIQUE(FLATTEN(vars)), ['std_dataset_id', '_private']),
 		            species_list: taxa,
 		            std_date_start: start,
 		            std_date_end: end
 		        }
 		    )[0]
-		    
+		
 		    LET quantitative = (
 		        FOR doc IN terms
 		            FILTER doc._key IN data.std_terms
@@ -323,10 +323,10 @@ function getDatasetCategories(request, response)
 		                              tags = UNIQUE(doc._data._tag),
 		                              subjects = UNIQUE(doc._data._subject)
 		        RETURN {
-		            _classes: UNIQUE(REMOVE_VALUE(classes, null)),
-		            _domain: UNIQUE(REMOVE_VALUE(FLATTEN(domains), null)),
-		            _tag: UNIQUE(REMOVE_VALUE(FLATTEN(tags), null)),
-		            _subjects: UNIQUE(REMOVE_VALUE(subjects, null))
+		            _classes: SORTED_UNIQUE(REMOVE_VALUE(classes, null)),
+		            _domain: SORTED_UNIQUE(REMOVE_VALUE(FLATTEN(domains), null)),
+		            _tag: SORTED_UNIQUE(REMOVE_VALUE(FLATTEN(tags), null)),
+		            _subjects: SORTED_UNIQUE(REMOVE_VALUE(subjects, null))
 		        }
 		    )[0]
 		
