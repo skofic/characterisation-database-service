@@ -330,11 +330,28 @@ function getDatasetCategories(request, response)
 		        }
 		    )[0]
 		
-		RETURN MERGE(
-			data,
-		    categories,
-		    { std_terms_quant: quantitative }
-		)
+		RETURN {
+		    _key: dset._key,
+		    std_project: dset.std_project,
+		    std_dataset: dset.std_dataset,
+		    std_date_submission: dset.std_date_submission,
+		    _title: dset._title,
+		    _description: dset._description,
+		    _citation: dset._citation,
+		    count: data.count,
+		    _subject: dset._subject,
+		    _subjects: categories._subjects,
+		    std_terms_key: dset.std_terms_key,
+		    std_terms_summary: dset.std_terms_summary,
+		    std_date_start: data.start,
+		    std_date_end: data.end,
+		    _domain: categories._domain,
+		    _tag: categories._tag,
+		    _classes: categories._classes,
+		    species_list: data.species_list,
+		    std_terms: data.std_terms,
+		    std_terms_quant: quantitative
+		}
 	`
 
 	///
@@ -352,17 +369,35 @@ function getDatasetCategories(request, response)
 		///
 		// Clean data.
 		///
-		if(result._tag.length === 0) {
-			delete result._tag
+		if(result._description === null) {
+			delete result._description
 		}
-		if(result.species_list.length === 1 && result.species_list[0] === null) {
-			delete result.species_list
+		if(result._citation === null) {
+			delete result._citation
+		}
+		if(result._subjects.length === 0) {
+			delete result._subjects
+		}
+		if(result.std_terms_summary === null) {
+			delete result.std_terms_summary
 		}
 		if(result.std_date_start === null) {
 			delete result.std_date_start
 		}
 		if(result.std_date_end === null) {
 			delete result.std_date_end
+		}
+		if(result._domain.length === 0) {
+			delete result._domain
+		}
+		if(result._tag.length === 0) {
+			delete result._tag
+		}
+		if(result._classes.length === 0) {
+			delete result._classes
+		}
+		if(result.species_list.length === 1 && result.species_list[0] === null) {
+			delete result.species_list
 		}
 		if(result.std_terms_quant.length === 0) {
 			delete result.std_terms_quant
