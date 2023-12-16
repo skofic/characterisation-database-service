@@ -330,28 +330,51 @@ function getDatasetCategories(request, response)
 		        }
 		    )[0]
 		
-		RETURN {
-		    _key: dset._key,
-		    std_project: dset.std_project,
-		    std_dataset: dset.std_dataset,
-		    std_date_submission: dset.std_date_submission,
-		    _title: dset._title,
-		    _description: dset._description,
-		    _citation: dset._citation,
-		    count: data.count,
-		    _subject: dset._subject,
-		    _subjects: categories._subjects,
-		    std_terms_key: dset.std_terms_key,
-		    std_terms_summary: dset.std_terms_summary,
-		    std_date_start: data.start,
-		    std_date_end: data.end,
-		    _domain: categories._domain,
-		    _tag: categories._tag,
-		    _classes: categories._classes,
-		    species_list: data.species_list,
-		    std_terms: data.std_terms,
-		    std_terms_quant: quantitative
-		}
+		RETURN HAS(dset, 'std_dataset_markers')
+			 ? {
+			    _key: dset._key,
+			    std_project: dset.std_project,
+			    std_dataset: dset.std_dataset,
+			    std_date_submission: dset.std_date_submission,
+			    _title: dset._title,
+			    _description: dset._description,
+			    _citation: dset._citation,
+			    count: data.count,
+			    _subject: dset._subject,
+			    _subjects: categories._subjects,
+			    std_terms_key: dset.std_terms_key,
+			    std_terms_summary: dset.std_terms_summary,
+			    std_date_start: data.start,
+			    std_date_end: data.end,
+			    _domain: categories._domain,
+			    _tag: categories._tag,
+			    _classes: categories._classes,
+			    species_list: data.species_list,
+			    std_terms: data.std_terms,
+			    std_terms_quant: quantitative,
+			    std_dataset_markers: dset.std_dataset_markers
+			 } : {
+			    _key: dset._key,
+			    std_project: dset.std_project,
+			    std_dataset: dset.std_dataset,
+			    std_date_submission: dset.std_date_submission,
+			    _title: dset._title,
+			    _description: dset._description,
+			    _citation: dset._citation,
+			    count: data.count,
+			    _subject: dset._subject,
+			    _subjects: categories._subjects,
+			    std_terms_key: dset.std_terms_key,
+			    std_terms_summary: dset.std_terms_summary,
+			    std_date_start: data.start,
+			    std_date_end: data.end,
+			    _domain: categories._domain,
+			    _tag: categories._tag,
+			    _classes: categories._classes,
+			    species_list: data.species_list,
+			    std_terms: data.std_terms,
+			    std_terms_quant: quantitative
+			 }
 	`
 
 	///
