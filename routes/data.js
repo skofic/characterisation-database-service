@@ -30,12 +30,12 @@ const opSchema = joi.string()
 	.default('AND')
 	.required()
 	.description("Chaining operator for query filters")
-const opSummary = joi.string()
+const opStat = joi.string()
 	.valid('MIN', 'MAX', 'AVG', 'MEDIAN', 'STDDEV', 'VARIANCE')
 	.default('AVG')
 	.required()
 	.description("MIN: minimum; MAX: maximum; AVG: average; MEDIAN: median; STDDEV: standard deviation; VARIANCE: variance")
-const opPivot = joi.string()
+const opSummary = joi.string()
 	.default('species')
 	.required()
 	.description("Descriptor global identifier on which to summarise data")
@@ -121,7 +121,7 @@ router.get(
  * The service will return dataset statistics if possible.
  */
 router.get(
-	':dataset/:stat/:pivot',
+	':dataset/:stat/:summary',
 	(req, res) => {
 		try{
 			res.send(datasetSummary(req, res))
@@ -138,8 +138,8 @@ router.get(
 	`)
 
 	.pathParam('dataset', datasetSchema)
-	.pathParam('stat', opSummary)
-	.pathParam('pivot', opPivot)
+	.pathParam('stat', opStat)
+	.pathParam('summary', opSummary)
 
 	.response([joi.object()])
 	.response(404, ErrorModel, "Dataset not found.")
@@ -289,7 +289,7 @@ function datasetSummary(request, response)
 	///
 	const dset = request.pathParams.dataset
 	const stat = request.pathParams.stat
-	const pivot = request.pathParams.pivot
+	const summary = request.pathParams.summary
 
 	///
 	// Get dataset.
@@ -306,18 +306,18 @@ function datasetSummary(request, response)
 	///
 	// Check pivot.
 	///
-	if(!dataset.std_terms_summary.includes(pivot)) {
-		throw httpError(400, `Descriptor ${pivot} not a summary field.`)        // ==>
+	if(!dataset.std_terms_summary.includes(summary)) {
+		throw httpError(400, `Descriptor ${summary} not a summary field.`)        // ==>
 	}
 
 	///
 	// Handle genetic indexes.
 	///
 	if(dataset.hasOwnProperty('std_dataset_markers')) {
-		return datasetGeneticSummary(request, response, dataset, stat, pivot)   // ==>
+		return datasetGeneticSummary(request, response, dataset, stat, summary)   // ==>
 	}
 
-	return datasetDataSummary(request, response, dataset, stat, pivot)          // ==>
+	return datasetDataSummary(request, response, dataset, stat, summary)          // ==>
 
 } // datasetSummary()
 
