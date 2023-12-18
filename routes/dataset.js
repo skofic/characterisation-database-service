@@ -65,48 +65,6 @@ router.tag('Dataset')
  * Query datasets.
  *
  * The service allows selecting datasets based on a series of selection criteria,
- * it will return the list of matching dataset keys.
- */
-router.post(
-	'query/key/:op',
-	(req, res) => {
-		try{
-			res.send(searchDatasetKeys(req, res))
-		} catch (error) {
-			throw error                                                         // ==>
-		}
-	},
-	'queryDatasetKeys'
-)
-	.summary('Query dataset keys')
-	.description(dd`
-		Retrieve dataset keys based on a set of query parameters, fill body with selection \
-		criteria and the service will return matching list of dataset keys.
-	`)
-
-	.pathParam('op', opSchema)
-	.body(ModelQuery, dd`
-		The body is an object that contains the query parameters:
-		- \`_key\`: Dataset unique identifier, provide a list of matching dataset keys.
-		- \`std_project\`: Project code, provide a list of matching project codes.
-		- \`std_dataset\`: Dataset code, provide a wildcard search string.
-		- \`std_date\`: Dataset date range, provide start and end dates with inclusion flags.
-		- \`std_date_submission\`: Dataset submission date range, provide start and end dates with inclusion flags.
-		- \`_domain\`: Dataset data domains, provide list of domain codes.
-		- \`_tag\`: Dataset data tags, provide list of tag codes.
-		- \`_subjects\`: Dataset data subjects, provide list of subject codes.
-		- \`_classes\`: Dataset data subjects, provide list of subject codes.
-		- \`std_terms\`: Dataset data descriptors, provide list of global identifiers.
-		- \`_title\`: Dataset data title text, provide space delimited keywords.
-		- \`_description\`: Dataset data description text, provide space delimited keywords.
-		Omit the properties that you don't want to search on.
-	`)
-	.response(keyListSchema)
-
-/**
- * Query datasets.
- *
- * The service allows selecting datasets based on a series of selection criteria,
  * it will return the list of matching dataset objects.
  */
 router.post(
@@ -183,47 +141,6 @@ router.get(
  * HANDLERS
  */
 
-
-/**
- * Search datasets and return matching keys.
- *
- * This service allows querying datasets based on a set oc search criteria,
- * and will return the matching dataset keys.
- *
- * @param request
- * @param response
- * @returns {[String]}
- */
-function searchDatasetKeys(request, response)
-{
-	///
-	// Get chain operator.
-	///
-	const op = request.pathParams.op
-
-	///
-	// Get query filters.
-	//
-	const filters = datasetQueryFilters(request, response)
-	if(filters.length === 0) {
-		return []                                                               // ==>
-	}
-
-	///
-	// Build filters block.
-	///
-	const query = aql`
-		FOR doc IN VIEW_DATASET
-			SEARCH ${aql.join(filters, ` ${op} `)}
-		RETURN doc._key
-	`
-
-	///
-	// Query.
-	///
-	return db._query(query).toArray()                                           // ==>
-
-} // searchDatasetKeys()
 
 /**
  * Search datasets and return matching objects.
@@ -332,8 +249,8 @@ function getDatasetCategories(request, response)
 		
 		RETURN {
 			count: data.count,
-		    std_date_start: data.start,
-		    std_date_end: data.end,
+		    std_date_start: data.std_date_start,
+		    std_date_end: data.std_date_end,
 		    _subjects: categories._subjects,
 		    _classes: categories._classes,
 		    _domain: categories._domain,
