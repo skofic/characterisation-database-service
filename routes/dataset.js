@@ -12,12 +12,35 @@ const dd = require('dedent')
 const joi = require('joi')
 const {aql, db} = require('@arangodb')
 const createRouter = require('@arangodb/foxx/router')
+const queryFilters = require('../utils/queryFilters')
 
 ///
 // Globals.
 ///
 const Model = require('../models/dataset')
 const ModelQuery = require('../models/datasetQuery')
+const ModelQueryDescription = dd`
+	The body is an object that contains the query parameters:
+	- \`_key\`: Provide a list of matching dataset unique identifiers.
+	- \`std_project\`: Provide a list of matching project codes.
+	- \`std_dataset\`: Provide a wildcard search string for the dataset code.
+	- \`std_date\`: Data date range, provide search values for start and end dates.
+	- \`std_date_submission\`: Dataset submission date range, provide start and end dates.
+	- \`_title\`: Provide space delimited keywords to search dataset title.
+	- \`_description\`: Provide space delimited keywords to search dataset description.
+	- \`_citation\`: Provide space delimited keywords to search dataset citations.
+	- \`std_terms_key\`: Provide list of dataset key fields with all or any selector.
+	- \`std_terms_summary\`: Provide list of dataset summary fields with all or any selector.
+	- \`count\`: Provide data records count range.
+	- \`_subject\`: Provide list of matching subjects.
+	- \`_classes\`: Provide list of matching classes.
+	- \`_domain\`: Provide list of matching domains.
+	- \`_tag\`: Provide list of dataset tags with all or any selector.
+	- \`species_list\`: Provide space delimited keywords to search species.
+	- \`std_terms\`: Provide list of featured variables in the dataset with all or any selector.
+	- \`std_terms_quant\`: Provide list of featured quantitative variables in the dataset with all or any selector.
+	Omit the properties that you don't want to search on.
+`
 const ModelCategories = require('../models/datasetCategories')
 const opSchema = joi.string()
 	.valid("AND", "OR")
@@ -35,14 +58,14 @@ const keyListSchema = joi.array()
 ///
 // Query parameters.
 ///
-const QueryParameters = [
-	"_key",
-	"std_project", "std_dataset",
-	"std_date", "std_date_submission",
-	"_domain", "_tag", "_subjects", "_classes",
-	"std_terms",
-	"_title", "_description"
-]
+// const QueryParameters = [
+// 	"_key",
+// 	"std_project", "std_dataset",
+// 	"std_date", "std_date_submission",
+// 	"_domain", "_tag", "_subjects", "_classes",
+// 	"std_terms",
+// 	"_title", "_description"
+// ]
 
 ///
 // Router.
@@ -85,22 +108,7 @@ router.post(
 	`)
 
 	.pathParam('op', opSchema)
-	.body(ModelQuery, dd`
-		The body is an object that contains the query parameters:
-		- \`_key\`: Dataset unique identifier, provide a list of matching dataset keys.
-		- \`std_project\`: Project code, provide a list of matching project codes.
-		- \`std_dataset\`: Dataset code, provide a wildcard search string.
-		- \`std_date\`: Dataset date range, provide start and end dates with inclusion flags.
-		- \`std_date_submission\`: Dataset submission date range, provide start and end dates with inclusion flags.
-		- \`_domain\`: Dataset data domains, provide list of domain codes.
-		- \`_tag\`: Dataset data tags, provide list of tag codes.
-		- \`_subjects\`: Dataset data subjects, provide list of subject codes.
-		- \`_classes\`: Dataset data subjects, provide list of subject codes.
-		- \`std_terms\`: Dataset data descriptors, provide list of global identifiers.
-		- \`_title\`: Dataset data title text, provide space delimited keywords.
-		- \`_description\`: Dataset data description text, provide space delimited keywords.
-		Omit the properties that you don't want to search on.
-	`)
+	.body(ModelQuery, ModelQueryDescription)
 	.response([Model])
 
 /**
@@ -336,69 +344,63 @@ function getDatasetCategories(request, response)
 function datasetQueryFilters(request, response)
 {
 	///
-	// Get valid query parameters.
+	// Iterate body properties.
 	///
-	const parameters = {}
-	for (const parameter of QueryParameters) {
-		if (request.body[parameter] !== undefined) {
-			switch (parameter) {
-				case "std_dataset":
-				case "std_date":
-				case "std_date_submission":
-				case "_title":
-				case "_description":
-					parameters[parameter] = request.body[parameter]
-					break;
-				default:
-					if (request.body[parameter].length > 0) {
-						parameters[parameter] = request.body[parameter]
-					}
-					break;
-			}
-		}
-	}
-
-	///
-	// Check if empty.
-	///
-	if(Object.keys(parameters).length === 0) {
-		return []                                                               // ==>
-	}
-
-	///
-	// Parse filters.
-	///
-	// const filters = [aql`FOR doc IN ${collection}`]
-	const parts = []
-	for(const [key, value] of Object.entries(parameters)) {
-		switch (key) {
-			// Match values.
+	const filters = []
+	for(const [key, value] of Object.entries(request.body)) {
+		///
+		// Parse body properties.
+		///
+		let filter = null
+		switch(key) {
 			case '_key':
 			case 'std_project':
-			case "_domain":
-			case "_tag":
-			case '_subjects':
+			case '_subject':
+				filter = queryFilters.filterList(key, value)
+				break
+
+			case'std_dataset':
+				filter = queryFilters.filterPattern(key, value)
+				break
+
+			case '_title':
+			case '_description':
+				filter = queryFilters.filterTokens(`${key}.iso_639_3_eng`, value, 'text_en')
+				break
+
+			case '_citation':
+			case 'species_list':
+				filter = queryFilters.filterTokens(key, value, 'text_en')
+				break
+
+			case 'std_date':
+				filter = queryFilters.filterDateRange(value)
+				break
+
+			case 'std_date_submission':
+			case 'count':
+				filter = queryFilters.filterIntegerRange(key, value)
+				break
+
 			case '_classes':
-			case "std_terms":
-				parts.push(aql`doc[${key}] IN ${value}`)
+			case '_domain':
+			case '_tag':
+			case 'std_terms_key':
+			case 'std_terms_summary':
+			case 'std_terms':
+			case 'std_terms_quant':
+				filter = queryFilters.filterLists(key, value, value.doAll)
 				break
-			// Match value string.
-			case 'std_dataset':
-				parts.push(aql`LIKE(doc[${key}], ${value})`)
-				break
-			// Match dates.
-			case "std_date":
-			case "std_date_submission":
-				parts.push(aql`IN_RANGE(doc[${key}], ${value.start}, ${value.end}, ${value.include_start}, ${value.include_end})`)
-				break
-			// Match text.
-			case "_title":
-			case "_description":
-				parts.push(aql`ANALYZER(doc[${key}].iso_639_3_eng IN TOKENS(${value}, "text_en"), "text_en")`)
-				break
+		}
+
+		///
+		// Add clause.
+		///
+		if(filter !== null) {
+			filters.push(filter)
 		}
 	}
 
-	return parts                                                                // ==>
+	return filters                                                      // ==>
 
 } // datasetQueryFilters()
