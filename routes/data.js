@@ -13,6 +13,7 @@ const joi = require('joi')
 const {aql, db} = require('@arangodb')
 const httpError = require('http-errors')
 const createRouter = require('@arangodb/foxx/router')
+const queryFilters = require('../utils/queryFilters')
 
 ///
 // Database globals.
@@ -23,7 +24,24 @@ const database = require('../globals/database')
 // Globals.
 ///
 const Model = require('../models/data')
+const ModelDescription = dd`
+  The service will return a list of data records, these records, will contain \
+  the following attributes:
+  - \`std_dataset_id\`: The dataset unique identifier, required.
+  - \`std_date\`: The date of the measurement, optional.
+  - \`species\`: The scientific name of the measured tree or population, optional.
+  - \`gcu_id_number\`: The gene conservation unit identifier, optional.
+  - \`chr_tree_code\`: The tree identifier, optional.\n
+  Besides the above attributes, the records may contain any data.`
 const ModelQuery = require('../models/dataQuery')
+const ModelQueryDescription = dd`
+	The body is an object that contains the query parameters:
+	- \`gcu_id_number\`: GCU identifier, provide a wildcard search string.
+	- \`std_date\`: Data measurement date range, provide start and end dates with inclusion flags.
+	- \`species\`: Scientific name, provide space delimited keywords.
+	- \`chr_tree_code\`: Tree identifier codes, provide list of tree codes.\n
+	Omit the properties that you don't want to search on.
+`
 const ErrorModel = require("../models/error_generic");
 const opSchema = joi.string()
 	.valid('AND', 'OR')
@@ -36,9 +54,8 @@ const opStat = joi.string()
 	.required()
 	.description("MIN: minimum; MAX: maximum; AVG: average; MEDIAN: median; STDDEV: standard deviation; VARIANCE: variance")
 const opSummary = joi.string()
-	.default('species')
 	.required()
-	.description("Descriptor global identifier on which to summarise data")
+	.description("Descriptor global identifier on which to summarise data. Note that it should be one of the elements of the `std_terms_summary` property in the dataset record.")
 const datasetSchema = joi.string()
 	.required()
 	.description("The dataset identifier")
@@ -103,7 +120,7 @@ router.get(
 	},
 	'allDatasetData'
 )
-	.summary('Get all dataset data records')
+	.summary('Get data records')
 	.description(dd`
 		Retrieve data records belonging to the provided dataset.
 		Provide the dataset identifier, the start element and the elements count in the path parameters.
@@ -113,7 +130,7 @@ router.get(
 	.pathParam('start', queryStartSchema)
 	.pathParam('limit', queryLimitSchema)
 
-	.response([Model])
+	.response([Model], ModelDescription)
 
 /**
  * Dataset data statistics.
@@ -131,10 +148,11 @@ router.get(
 	},
 	'datasetSummaryData'
 )
-	.summary('Get dataset summary data')
+	.summary('Get data statistics')
 	.description(dd`
 		Retrieve dataset summary data.
-		Provide the dataset identifier, the summary statistic and the descriptor global identifier on which to summarise in the path parameters.
+		Provide the dataset identifier, the desired summary statistic and the \
+		descriptor global identifier on which to summarise in the path parameters.
 	`)
 
 	.pathParam('dataset', datasetSchema)
@@ -163,7 +181,7 @@ router.post(
 	},
 	'queryDatasetData'
 )
-	.summary('Query dataset data records')
+	.summary('Query data records')
 	.description(dd`
 		The service will allow querying the data elements belonging to the provided dataset.
 	`)
@@ -173,14 +191,7 @@ router.post(
 	.pathParam('start', queryStartSchema)
 	.pathParam('limit', queryLimitSchema)
 
-	.body(ModelQuery, dd`
-		The body is an object that contains the query parameters:
-		- \`gcu_id_number\`: GCU identifier, provide a wildcard search string.
-		- \`std_date\`: Data measurement date range, provide start and end dates with inclusion flags.
-		- \`species\`: Scientific name, provide space delimited keywords.
-		- \`chr_tree_code\`: Tree identifier codes, provide list of tree codes.
-		Omit the properties that you don't want to search on.
-	`)
+	.body(ModelQuery, ModelQueryDescription)
 	.response([Model])
 
 
@@ -599,60 +610,40 @@ function datasetGeneticSummary(
 function dataQueryFilters(request, response)
 {
 	///
-	// Get valid query parameters.
+	// Iterate body properties.
 	///
-	const parameters = {}
-	for (const parameter of QueryParameters) {
-		if (request.body[parameter] !== undefined) {
-			switch (parameter) {
-				case 'gcu_id_number':
-				case 'std_date':
-				case 'species':
-					parameters[parameter] = request.body[parameter]
-					break
-				default:
-					if (request.body[parameter].length > 0) {
-						parameters[parameter] = request.body[parameter]
-					}
-					break
-			}
-		}
-	}
-
-	///
-	// Check if empty.
-	///
-	if(Object.keys(parameters).length === 0) {
-		return []                                                               // ==>
-	}
-
-	///
-	// Parse filters.
-	///
-	// const filters = [aql`FOR doc IN ${collection}`]
-	const parts = []
-	for(const [key, value] of Object.entries(parameters)) {
-		switch (key) {
-			// Match values.
-			case 'std_dataset_id':
-			case 'chr_tree_code':
-				parts.push(aql`dat[${key}] IN ${value}`)
-				break
-			// Match value string.
+	const filters = []
+	for(const [key, value] of Object.entries(request.body)) {
+		///
+		// Parse body properties.
+		///
+		let filter = null
+		switch(key) {
 			case 'gcu_id_number':
-				parts.push(aql`LIKE(dat[${key}], ${value})`)
+				filter = queryFilters.filterPattern(key, value)
 				break
-			// Match dates.
-			case 'std_date':
-				parts.push(aql`IN_RANGE(dat[${key}], ${value.start}, ${value.end}, ${value.include_start}, ${value.include_end})`)
-				break
-			// Match text.
+
 			case 'species':
-				parts.push(aql`ANALYZER(dat[${key}] IN TOKENS(${value}, "text_en"), "text_en")`)
+				filter = queryFilters.filterTokens(key, value, 'text_en')
 				break
+
+			case 'std_date':
+				filter = queryFilters.filterDateRange(value)
+				break
+
+			case 'chr_tree_code':
+				filter = queryFilters.filterList(key, value)
+				break
+		}
+
+		///
+		// Add clause.
+		///
+		if(filter !== null) {
+			filters.push(filter)
 		}
 	}
 
-	return parts                                                                // ==>
+	return filters                                                      // ==>
 
 } // dataQueryFilters()

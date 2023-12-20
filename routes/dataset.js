@@ -484,9 +484,19 @@ function updateDataset(request, response)
 	// Clean dataset.
 	///
 	for(const [key, value] of Object.entries(dataset)) {
+		if(Array.isArray(value)) {
+			if(value.length > 0) {
+				for(const item of value) {
+					if(item === null) {
+						value.splice(value.indexOf(item), 1)
+					}
+				}
+			}
+			if(value.length === 0) {
+				delete dataset[key]
+			}
+		}
 		if(dataset[key] === null) {
-			delete dataset[key]
-		} else if(Array.isArray(value) && value.length === 0) {
 			delete dataset[key]
 		}
 	}

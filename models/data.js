@@ -16,12 +16,12 @@ module.exports = {
         .required()
         .description("Dataset key reference"),
     std_date: joi.string()
-        .regex(/^[0-9]+$/)
+        .regex(/^[0-9]{4,8}$/)
         .description("Item measurement date"),
     species: joi.string()
         .description("Item scientific name"),
     gcu_id_number: joi.string()
-        .regex(/[A-Z]{3}[0*9]{4}/)
+        .regex(/[A-Z]{3}[0-9]{4}/)
         .description("Gene conservation unit reference"),
     chr_tree_code: joi.string()
         .description("Tree identifier")

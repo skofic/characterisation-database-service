@@ -13,24 +13,22 @@ module.exports = {
 	schema: joi.object({
 		// Describe the attributes with joi here
 		gcu_id_number: joi.string()
-			.description("GCU identifier wildcard"),
+			.description("GCU identifier wildcard search string"),
 		std_date: joi.object({
-			start: joi.string()
-				.required(),
-			end: joi.string()
-				.required(),
-			include_start: joi.boolean()
-				.required(),
-			include_end: joi.boolean()
-				.required()
-		}).description("Dataset measurement date range"),
+			std_date_start: joi.string()
+				.regex(/^[0-9]{4,8}$/),
+			std_date_end: joi.string()
+				.regex(/^[0-9]{4,8}$/)
+		})
+			.or('std_date_start','std_date_end')
+			.description("Provide start and/or end dates"),
 		species: joi.string()
-			.description("Scientific name tokens"),
+			.description("Scientific name tokens search string"),
 		chr_tree_code: joi.array()
 			.items(joi.string())
-			.description("Tree identifiers")
+			.description("List of tree identifiers")
 	})
-		.description("Dataset search parameters"),
+		.description("Data search parameters"),
 
 	forClient(obj) {
 		// Implement outgoing transformations here
