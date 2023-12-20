@@ -16,6 +16,16 @@ module.exports = {
 			.required()
 			.integer()
 			.description("Number of data records in dataset."),
+		std_date_start: joi.string()
+			.regex(/^[0-9]{4,8}$/)
+			.description("Data start date, inclusive."),
+		std_date_end: joi.string()
+			.regex(/^[0-9]{4,8}$/)
+			.description("Data end date, inclusive."),
+		_subjects: joi.array()
+			.required()
+			.items(joi.string())
+			.description("Data subject"),
 		_classes: joi.array()
 			.required()
 			.items(joi.string())
@@ -27,24 +37,16 @@ module.exports = {
 		_tag: joi.array()
 			.items(joi.string())
 			.description("Data tags"),
-		_subjects: joi.array()
-			.required()
+		species_list: joi.array()
 			.items(joi.string())
-			.description("Data subject"),
+			.description("List of species in data, if any."),
 		std_terms: joi.array()
 			.required()
 			.items(joi.string())
 			.description("List of descriptors"),
 		std_terms_quant: joi.array()
 			.items(joi.string())
-			.description("List of quantitative descriptors"),
-		species_list: joi.array()
-			.items(joi.string())
-			.description("List of species in data, if any."),
-		std_date_start: joi.string()
-			.description("Data start date, inclusive."),
-		std_date_end: joi.string()
-			.description("Data end date, inclusive.")
+			.description("List of quantitative descriptors")
 	}),
 
 	forClient(obj) {

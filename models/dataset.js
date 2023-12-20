@@ -23,8 +23,17 @@ module.exports = {
 			.description("The dataset's code or acronym"),
 		std_date_submission: joi.string()
 			.required()
-			.regex(/^[0-9]+$/)
+			.regex(/^[0-9]{4,8}$/)
 			.description("Dataset submission date"),
+		std_terms_key: joi.array()
+			.items(joi.string())
+			.description("Dataset key fields"),
+		std_terms_summary: joi.array()
+			.items(joi.string())
+			.description("Dataset summary fields"),
+		_subject: joi.string()
+			.required()
+			.description("Data subject"),
 		_title: joi.object({
 			iso_639_3_eng: joi.string().required()
 		})
@@ -35,34 +44,39 @@ module.exports = {
 		})
 			.required()
 			.description("Dataset description"),
+		_citation: joi.array()
+			.items(joi.string())
+			.description("Required citations"),
 		count: joi.number()
 			.integer()
 			.description("Number of data records in dataset"),
-		_subject: joi.string()
-			.required()
-			.description("Data subject"),
-		_std_terms_key: joi.array()
-			.required()
+		std_date_start: joi.string()
+			.regex(/^[0-9]{4, 8}$/)
+			.description("Data date dange start"),
+		std_date_end: joi.string()
+			.regex(/^[0-9]{4, 8}$/)
+			.description("Data date dange end"),
+		_subjects: joi.array()
 			.items(joi.string())
-			.description("List of fields that make a data entry unique"),
-		std_terms_summary: joi.array()
-			.items(joi.string())
-			.description("List of fields that can be used to make data summaries"),
-		_domain: joi.array()
-			.items(joi.string())
-			.description("Data domains"),
-		_tag: joi.array()
-			.items(joi.string())
-			.description("Data tags"),
+			.description("List of subjects featured in data record descriptors"),
 		_classes: joi.array()
 			.items(joi.string())
-			.description("Data descriptor classes"),
+			.description("List of classes featured in data record descriptors"),
+		_domain: joi.array()
+			.items(joi.string())
+			.description("List of domains featured in data record descriptors"),
+		_tag: joi.array()
+			.items(joi.string())
+			.description("List of tags featured in data record descriptors"),
+		species_list: joi.array()
+			.items(joi.string())
+			.description("List of species featured in data"),
 		std_terms: joi.array()
 			.items(joi.string())
-			.description("Data descriptors"),
+			.description("List of descriptors featured in data"),
 		std_terms_quant: joi.array()
 			.items(joi.string())
-			.description("Quantitative data descriptors"),
+			.description("List of quantitative descriptors featured in data"),
 		std_dataset_markers: joi.array()
 			.optional()
 			.items(

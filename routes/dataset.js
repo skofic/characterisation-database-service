@@ -15,9 +15,43 @@ const createRouter = require('@arangodb/foxx/router')
 const queryFilters = require('../utils/queryFilters')
 
 ///
+// Errors.
+///
+const status = require('statuses')
+const httpError = require('http-errors')
+
+//
+// Error codes.
+//
+const HTTP_NOT_FOUND = status('not found');
+
+///
 // Globals.
 ///
 const Model = require('../models/dataset')
+const ModelDescription = dd`
+	The dataset record contains the following properties:
+	- \`_key\`: The dataset unique identifier.
+	- \`std_project\`: Dataset project code.
+	- \`std_dataset\`: Dataset code or acronym.
+	- \`std_date_submission\`: Dataset submission date.
+	- \`std_terms_key\`: List of key fields.
+	- \`std_terms_summary\`: List of summary fields
+	- \`_subject\`: Dataset data subject.
+	- \`_title\`: Dataset title.
+	- \`_description\`: Dataset description.
+	- \`_citation\`: Required citations.
+	- \`count\`: Number of data records.
+	- \`std_date_start\`: Data date range start.
+	- \`std_date_edd\`: Data date range end.
+	- \`_subjects\`: List of subjects featured in data descriptors.
+	- \`_classes\`: List of classes featured in data descriptors.
+	- \`_domain\`: List of domains featured in data descriptors.
+	- \`_tag\`: List of tags featured in data descriptors.
+	- \`species_list\`: List of species featured in data.
+	- \`std_terms\`: List of variables featured in data.
+	- \`std_terms_quant\`: List of quantitative variables featured in data.
+	- \`std_dataset_markers\`: List of species/markers combinations.`
 const ModelQuery = require('../models/datasetQuery')
 const ModelQueryDescription = dd`
 	The body is an object that contains the query parameters:
@@ -39,9 +73,21 @@ const ModelQueryDescription = dd`
 	- \`species_list\`: Provide space delimited keywords to search species.
 	- \`std_terms\`: Provide list of featured variables in the dataset with all or any selector.
 	- \`std_terms_quant\`: Provide list of featured quantitative variables in the dataset with all or any selector.
-	Omit the properties that you don't want to search on.
-`
+	Omit the properties that you don't want to search on.`
 const ModelCategories = require('../models/datasetCategories')
+const ModelCategoriesDescription = dd`
+	The service will return the following dataset statistics:
+	- \`count\`: Number of data records.
+	- \`std_date_start\`: Data start date.
+	- \`std_date_endt\`: Data end date.
+	- \`_subject\`: List of subjects featured in data descriptors.
+	- \`_classes\`: List of classes featured in data descriptors.
+	- \`_domain\`: List of domains featured in data descriptors.
+	- \`_tag\`: List of tags featured in data descriptors.
+	- \`species_list\`: List of species featured in data.
+	- \`std_terms\`: List of descriptors featured in data.
+	- \`std_terms_quant\`: List of quantitative descriptors featured in data.`
+const ErrorModel = require("../models/error_generic");
 const opSchema = joi.string()
 	.valid("AND", "OR")
 	.default("AND")
@@ -101,15 +147,16 @@ router.post(
 	},
 	'queryDatasetObjects'
 )
-	.summary('Query dataset objects')
+	.summary('Query datasets')
 	.description(dd`
-		Retrieve dataset objects based on a set of query parameters, fill body with selection \
-		criteria and the service will return matching list of dataset objects.
+		Retrieve dataset objects based on a set of query parameters, fill body \
+		with selection criteria and the service will return matching list of \
+		dataset objects.
 	`)
 
 	.pathParam('op', opSchema)
 	.body(ModelQuery, ModelQueryDescription)
-	.response([Model])
+	.response([Model], ModelDescription)
 
 /**
  * Get dataset data descriptor qualifications.
@@ -133,16 +180,47 @@ router.get(
 	},
 	'getDatasetCategories'
 )
-	.summary('Get dataset data categories')
+	.summary('Get dataset summary')
 	.description(dd`
-		Retrieve dataset objects based on a set of query parameters, fill body with selection \
-		criteria and the service will return matching list of dataset objects.
-		Note that this data is already in the dataset record, this service will \
-		return this data dynamically by probing the dataset data records.
+		Return data summaries related to provided dataset key.
+		The service will scan all dataset data records and compile a series of \
+		summaries. This data should already be part of the dataset record, \
+		except that in this case the statistics are returned dynamically.
 	`)
 
 	.pathParam('key', keySchema)
-	.response(ModelCategories)
+	.response(ModelCategories, ModelCategoriesDescription)
+
+/**
+ * Update dataset.
+ *
+ * The service will retrieve dynamically the data summaries and update the
+ * dataset record.
+ *
+ * You should use this service whenever the dataset data changes. The service
+ * will retrieve the summary data and replace it in the dataset record.
+ */
+router.get(
+	'update/:key',
+	(req, res) => {
+		try{
+			res.send(updateDataset(req, res))
+		} catch (error) {
+			throw error                                                         // ==>
+		}
+	},
+	'updateDataset'
+)
+	.summary('Update dataset')
+	.description(dd`
+		Update the summary data in the dataset.
+		This service should be used whenever the dataset data changes: it will
+		update the summary data and replace the dataset record.
+	`)
+
+	.pathParam('key', keySchema)
+	.response(200, [Model], ModelDescription)
+	.response(404, ErrorModel, dd`Record not found.`)
 
 
 /**
@@ -280,42 +358,12 @@ function getDatasetCategories(request, response)
 	///
 	if(Object.keys(recs).length !== 0) {
 		result = recs[0]
-
-		///
-		// Clean data.
-		///
-		if(result._description === null) {
-			delete result._description
-		}
-		if(result._citation === null) {
-			delete result._citation
-		}
-		if(result._subjects.length === 0) {
-			delete result._subjects
-		}
-		if(result.std_terms_summary === null) {
-			delete result.std_terms_summary
-		}
-		if(result.std_date_start === null) {
-			delete result.std_date_start
-		}
-		if(result.std_date_end === null) {
-			delete result.std_date_end
-		}
-		if(result._domain.length === 0) {
-			delete result._domain
-		}
-		if(result._tag.length === 0) {
-			delete result._tag
-		}
-		if(result._classes.length === 0) {
-			delete result._classes
-		}
-		if(result.species_list.length === 1 && result.species_list[0] === null) {
-			delete result.species_list
-		}
-		if(result.std_terms_quant.length === 0) {
-			delete result.std_terms_quant
+		for(const [key, value] of Object.entries(result)) {
+			if(result[key] === null) {
+				delete result[key]
+			} else if(Array.isArray(value) && value.length === 0) {
+				delete result[key]
+			}
 		}
 	}
 
@@ -325,6 +373,132 @@ function getDatasetCategories(request, response)
 	return result                                                               // ==>
 
 } // getDatasetCategories()
+
+/**
+ * Update dataset.
+ *
+ * This function will collect dynamically the dataset statistics and merge
+ * them into the dataset, it will then replace the dataset record.
+ *
+ * @param request
+ * @param response
+ * @returns {[Object]}
+ */
+function updateDataset(request, response)
+{
+	///
+	// Get chain operator.
+	///
+	const key = request.pathParams.key
+
+	///
+	// Build filters block.
+	///
+	let query = aql`
+		LET record = (
+		    FOR dset IN VIEW_DATASET
+		        SEARCH dset._key == ${key}
+		    RETURN UNSET(
+		        dset,
+		        [
+		            "_id", "_rev",
+		            "count",
+		            "std_date_start", "std_date_end",
+		            "_subjects", "_classes", "_domain", "_tag",
+		            "species_list",
+		            "std_terms", "std_terms_quant"
+		        ]
+		    )
+		)[0]
+		
+		LET stats = (
+		    FOR dset IN VIEW_DATASET
+		        SEARCH dset._key == ${key}
+		        
+		        LET data = (
+		            FOR dat IN VIEW_DATA
+		                SEARCH dat.std_dataset_id == dset._key
+		                COLLECT AGGREGATE items = COUNT(),
+		                                  vars = UNIQUE(ATTRIBUTES(dat, true)),
+		                                  taxa = SORTED_UNIQUE(dat.species),
+		                                  start = MIN(dat.std_date),
+		                                  end = MAX(dat.std_date)
+		            RETURN {
+		                count: items,
+		                std_terms: REMOVE_VALUES(SORTED_UNIQUE(FLATTEN(vars)), ['std_dataset_id', '_private']),
+		                species_list: taxa,
+		                std_date_start: start,
+		                std_date_end: end
+		            }
+		        )[0]
+		    
+		        LET quantitative = (
+		            FOR doc IN terms
+		                FILTER doc._key IN data.std_terms
+		                FILTER doc._data._class IN ["_class_quantity", "_class_quantity_calculated", "_class_quantity_averaged"]
+		            RETURN doc._key
+		        )
+		    
+		        LET categories = (
+		            FOR doc IN terms
+		                FILTER doc._key IN data.std_terms
+		                COLLECT AGGREGATE classes = UNIQUE(doc._data._class),
+		                                  domains = UNIQUE(doc._data._domain),
+		                                  tags = UNIQUE(doc._data._tag),
+		                                  subjects = UNIQUE(doc._data._subject)
+		            RETURN {
+		                _classes: SORTED_UNIQUE(REMOVE_VALUE(classes, null)),
+		                _domain: SORTED_UNIQUE(REMOVE_VALUE(FLATTEN(domains), null)),
+		                _tag: SORTED_UNIQUE(REMOVE_VALUE(FLATTEN(tags), null)),
+		                _subjects: SORTED_UNIQUE(REMOVE_VALUE(subjects, null))
+		            }
+		        )[0]
+		    
+		    RETURN {
+		        count: data.count,
+		        std_date_start: data.std_date_start,
+		        std_date_end: data.std_date_end,
+		        _subjects: categories._subjects,
+		        _classes: categories._classes,
+		        _domain: categories._domain,
+		        _tag: categories._tag,
+		        species_list: data.species_list,
+		        std_terms: data.std_terms,
+		        std_terms_quant: quantitative
+		    }
+		)[0]
+		
+		RETURN (record != null) ? MERGE(record, stats)
+		                        : null
+	`
+
+	///
+	// Query.
+	///
+	const dataset = db._query(query).toArray()[0]
+	if(dataset === null) {
+		throw httpError(HTTP_NOT_FOUND, `Dataset ${key} not found`)     // ==>
+	}
+
+	///
+	// Clean dataset.
+	///
+	for(const [key, value] of Object.entries(dataset)) {
+		if(dataset[key] === null) {
+			delete dataset[key]
+		} else if(Array.isArray(value) && value.length === 0) {
+			delete dataset[key]
+		}
+	}
+
+	///
+	// Replace record.
+	///
+	db._query(aql`REPLACE ${dataset} IN dataset`)
+
+	return dataset                                                      // ==>
+
+} // updateDataset()
 
 
 /**
