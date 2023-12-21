@@ -195,13 +195,13 @@ router.get(
  * Update dataset.
  *
  * The service will retrieve dynamically the data summaries and update the
- * dataset record.
+ * dataset records.
  *
  * You should use this service whenever the dataset data changes. The service
- * will retrieve the summary data and replace it in the dataset record.
+ * will retrieve the summary data and replace it in the dataset records.
  */
-router.get(
-	'update/:key',
+router.put(
+	'update',
 	(req, res) => {
 		try{
 			res.send(updateDataset(req, res))
@@ -209,16 +209,17 @@ router.get(
 			throw error                                                         // ==>
 		}
 	},
-	'updateDataset'
+	'updateDatasets'
 )
-	.summary('Update dataset')
+	.summary('Update datasets')
 	.description(dd`
-		Update the summary data in the dataset.
+		Update the summary data in the datasets.
 		This service should be used whenever the dataset data changes: it will
-		update the summary data and replace the dataset record.
+		update the summary data and replace the dataset records.
+		Provide in the body the list of dataset keys.
 	`)
 
-	.pathParam('key', keySchema)
+	.body(keyListSchema)
 	.response(200, [Model], ModelDescription)
 	.response(404, ErrorModel, dd`Record not found.`)
 
@@ -377,8 +378,11 @@ function getDatasetCategories(request, response)
 /**
  * Update dataset.
  *
- * This function will collect dynamically the dataset statistics and merge
- * them into the dataset, it will then replace the dataset record.
+ * This function will retrieve the dataset records and statistics identified
+ * by the list of dataset keys parameter in the body.
+ *
+ * Once retrieved the updated dataset records it will replace them in the
+ * database.
  *
  * @param request
  * @param response
@@ -389,15 +393,15 @@ function updateDataset(request, response)
 	///
 	// Get chain operator.
 	///
-	const key = request.pathParams.key
+	const keys = request.body
 
 	///
 	// Build filters block.
 	///
 	let query = aql`
-		LET record = (
+		LET records = (
 		    FOR dset IN VIEW_DATASET
-		        SEARCH dset._key == ${key}
+		        SEARCH dset._key IN ${keys}
 		    RETURN UNSET(
 		        dset,
 		        [
@@ -409,52 +413,54 @@ function updateDataset(request, response)
 		            "std_terms", "std_terms_quant"
 		        ]
 		    )
-		)[0]
+		)
 		
-		LET stats = (
-		    FOR dset IN VIEW_DATASET
-		        SEARCH dset._key == ${key}
-		        
-		        LET data = (
-		            FOR dat IN VIEW_DATA
-		                SEARCH dat.std_dataset_id == dset._key
-		                COLLECT AGGREGATE items = COUNT(),
-		                                  vars = UNIQUE(ATTRIBUTES(dat, true)),
-		                                  taxa = SORTED_UNIQUE(dat.species),
-		                                  start = MIN(dat.std_date),
-		                                  end = MAX(dat.std_date)
-		            RETURN {
-		                count: items,
-		                std_terms: REMOVE_VALUES(SORTED_UNIQUE(FLATTEN(vars)), ['std_dataset_id', '_private']),
-		                species_list: taxa,
-		                std_date_start: start,
-		                std_date_end: end
-		            }
-		        )[0]
+		FOR record IN records
+		    LET data = (
+		        FOR dat IN VIEW_DATA
+		            SEARCH dat.std_dataset_id == record._key
+		            COLLECT AGGREGATE items = COUNT(),
+		                              vars = UNIQUE(ATTRIBUTES(dat, true)),
+		                              taxa = SORTED_UNIQUE(dat.species),
+		                              start = MIN(dat.std_date),
+		                              end = MAX(dat.std_date)
+		        RETURN {
+		            count: items,
+		            std_terms: REMOVE_VALUES(
+		                SORTED_UNIQUE(FLATTEN(vars)),
+		                ['std_dataset_id', '_private']
+		            ),
+		            species_list: taxa,
+		            std_date_start: start,
+		            std_date_end: end
+		        }
+		    )[0]
+		
+		    LET quantitative = (
+		        FOR doc IN terms
+		            FILTER doc._key IN data.std_terms
+		            FILTER doc._data._class IN ["_class_quantity", "_class_quantity_calculated", "_class_quantity_averaged"]
+		        RETURN doc._key
+		    )
 		    
-		        LET quantitative = (
-		            FOR doc IN terms
-		                FILTER doc._key IN data.std_terms
-		                FILTER doc._data._class IN ["_class_quantity", "_class_quantity_calculated", "_class_quantity_averaged"]
-		            RETURN doc._key
-		        )
-		    
-		        LET categories = (
-		            FOR doc IN terms
-		                FILTER doc._key IN data.std_terms
-		                COLLECT AGGREGATE classes = UNIQUE(doc._data._class),
-		                                  domains = UNIQUE(doc._data._domain),
-		                                  tags = UNIQUE(doc._data._tag),
-		                                  subjects = UNIQUE(doc._data._subject)
-		            RETURN {
-		                _classes: SORTED_UNIQUE(REMOVE_VALUE(classes, null)),
-		                _domain: SORTED_UNIQUE(REMOVE_VALUE(FLATTEN(domains), null)),
-		                _tag: SORTED_UNIQUE(REMOVE_VALUE(FLATTEN(tags), null)),
-		                _subjects: SORTED_UNIQUE(REMOVE_VALUE(subjects, null))
-		            }
-		        )[0]
-		    
-		    RETURN {
+		    LET categories = (
+		        FOR doc IN terms
+		            FILTER doc._key IN data.std_terms
+		            COLLECT AGGREGATE classes = UNIQUE(doc._data._class),
+		                              domains = UNIQUE(doc._data._domain),
+		                              tags = UNIQUE(doc._data._tag),
+		                              subjects = UNIQUE(doc._data._subject)
+		        RETURN {
+		            _classes: SORTED_UNIQUE(REMOVE_VALUE(classes, null)),
+		            _domain: SORTED_UNIQUE(REMOVE_VALUE(FLATTEN(domains), null)),
+		            _tag: SORTED_UNIQUE(REMOVE_VALUE(FLATTEN(tags), null)),
+		            _subjects: SORTED_UNIQUE(REMOVE_VALUE(subjects, null))
+		        }
+		    )[0]
+		
+		RETURN MERGE(
+		    record,
+		    {
 		        count: data.count,
 		        std_date_start: data.std_date_start,
 		        std_date_end: data.std_date_end,
@@ -466,47 +472,57 @@ function updateDataset(request, response)
 		        std_terms: data.std_terms,
 		        std_terms_quant: quantitative
 		    }
-		)[0]
-		
-		RETURN (record != null) ? MERGE(record, stats)
-		                        : null
+		)
 	`
 
 	///
-	// Query.
+	// Query updated dataset records.
 	///
-	const dataset = db._query(query).toArray()[0]
-	if(dataset === null) {
-		throw httpError(HTTP_NOT_FOUND, `Dataset ${key} not found`)     // ==>
-	}
-
-	///
-	// Clean dataset.
-	///
-	for(const [key, value] of Object.entries(dataset)) {
-		if(Array.isArray(value)) {
-			if(value.length > 0) {
-				for(const item of value) {
-					if(item === null) {
-						value.splice(value.indexOf(item), 1)
-					}
-				}
-			}
-			if(value.length === 0) {
+	const datasets = db._query(query).toArray()
+	for(const dataset of datasets)
+	{
+		///
+		// Clean dataset.
+		///
+		for(const [key, value] of Object.entries(dataset))
+		{
+			///
+			// Delete null properties.
+			///
+			if(dataset[key] === null) {
 				delete dataset[key]
 			}
-		}
-		if(dataset[key] === null) {
-			delete dataset[key]
+
+			///
+			// Handle arrays.
+			///
+			if(Array.isArray(value))
+			{
+				///
+				//Remove array null elements.
+				///
+				for (let i = value.length - 1; i >= 0; i--) {
+					if (value[i] === null) {
+						value.splice(i, 1);
+					}
+				}
+
+				///
+				// Remove empty arrays.
+				///
+				if(value.length === 0) {
+					delete dataset[key]
+				}
+			}
+
+			///
+			// Replace dataset.
+			///
+			db._query(aql`REPLACE ${dataset} IN dataset`)
 		}
 	}
 
-	///
-	// Replace record.
-	///
-	db._query(aql`REPLACE ${dataset} IN dataset`)
-
-	return dataset                                                      // ==>
+	return datasets                                                     // ==>
 
 } // updateDataset()
 
