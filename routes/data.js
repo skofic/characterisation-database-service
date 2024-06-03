@@ -83,7 +83,8 @@ const QueryParameters = [
 ///
 // Collections and views.
 ///
-const collection_dataset = db._collection(database.documentCollections.dataset)
+const collection_dataset = db._collection(database.globals.collections.dataset.name)
+//const collection_dataset = db._collection(database.documentCollections.dataset)
 
 
 ///
