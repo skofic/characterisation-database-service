@@ -31,20 +31,20 @@ for (const [key, collection] of Object.entries(database.globals.collections)) {
 	}
 }
 
-///
-// Create edge collections.
-///
-for (const [key, collection] of Object.entries(database.globals.edges)) {
-	if (!db._collection(collection.name)) {
-		log +=`Creating edge collection ${collection.name}.\n`
-		const coll = db._createEdgeCollection(collection.name)
-		for(const index of collection.index) {
-			coll.ensureIndex(index)
-		}
-	} else if (context.isProduction) {
-		log += `Collection ${collection.name} already exists. Leaving it untouched.\n`
-	}
-}
+// ///
+// // Create edge collections.
+// ///
+// for (const [key, collection] of Object.entries(database.globals.edges)) {
+// 	if (!db._collection(collection.name)) {
+// 		log +=`Creating edge collection ${collection.name}.\n`
+// 		const coll = db._createEdgeCollection(collection.name)
+// 		for(const index of collection.index) {
+// 			coll.ensureIndex(index)
+// 		}
+// 	} else if (context.isProduction) {
+// 		log += `Collection ${collection.name} already exists. Leaving it untouched.\n`
+// 	}
+// }
 
 ///
 // Create analyzers.
