@@ -258,9 +258,9 @@ function searchDatasetObjects(request, response)
 	// Build filters block.
 	///
 	const query = aql`
-		FOR doc IN VIEW_DATASET
+		FOR dat IN VIEW_DATASET
 			SEARCH ${aql.join(filters, ` ${op} `)}
-		RETURN doc
+		RETURN dat
 	`
 
 	///

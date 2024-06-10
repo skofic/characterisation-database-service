@@ -119,10 +119,10 @@ function filterDateRange(
 	///
 	const filters = []
 	if(theValue.hasOwnProperty('std_date_start')) {
-		filters.push(aql`doc.std_date_start >= ${theValue.std_date_start}`)
+		filters.push(aql`dat.std_date_start >= ${theValue.std_date_start}`)
 	}
 	if(theValue.hasOwnProperty('std_date_end')) {
-		filters.push(aql`doc.std_date_end <= ${theValue.std_date_end}`)
+		filters.push(aql`dat.std_date_end <= ${theValue.std_date_end}`)
 	}
 
 	///
@@ -142,6 +142,60 @@ function filterDateRange(
 	return null                                                         // ==>
 
 } // filterDateRange()
+
+/**
+ * Create date interval filter.
+ *
+ * This function creates a filter to match date ranges, it expects the
+ * provided value to be a structure with two elements: `std_date_start`,
+ * representing the start date and `std_end_date` representing the end date.
+ * The range is inclusive of the provided range bounds.
+ *
+ * Note that this filter is expected to be applied to records that feature
+ * the `std_date` field at the top level of the object.
+ *
+ * It is possible to omit one of the values.
+ *
+ * The filter expects the search target to be a view and the document reference
+ * is assumed to be `dat`.
+ *
+ * The result will be a `dat.field >= min` and/or
+ * `dat.field <= max` filter.
+ *
+ * @param theValue {Object}: Date range structure.
+ * @return {aql}: The filter clause.
+ */
+function filterDateInterval(
+	theValue
+){
+	///
+	// Collect filters.
+	///
+	const filters = []
+	if(theValue.hasOwnProperty('std_date_start')) {
+		filters.push(aql`dat.std_date >= ${theValue.std_date_start}`)
+	}
+	if(theValue.hasOwnProperty('std_date_end')) {
+		filters.push(aql`dat.std_date <= ${theValue.std_date_end}`)
+	}
+
+	///
+	// Handle two filters.
+	///
+	if(filters.length === 2) {
+		return aql.join(filters, ' AND ')                               // ==>
+	}
+
+	///
+	// Handle one filter.
+	///
+	if(filters.length === 1) {
+		return filters[0]                                               // ==>
+	}
+
+	return null                                                         // ==>
+
+} // filterDateInterval()
 
 /**
  * Create integer range filter.
@@ -171,10 +225,10 @@ function filterIntegerRange(
 	///
 	const filters = []
 	if(theValue.hasOwnProperty('min')) {
-		filters.push(aql`doc[${theProperty}] >= ${theValue.min}`)
+		filters.push(aql`dat[${theProperty}] >= ${theValue.min}`)
 	}
 	if(theValue.hasOwnProperty('max')) {
-		filters.push(aql`doc[${theProperty}] <= ${theValue.max}`)
+		filters.push(aql`dat[${theProperty}] <= ${theValue.max}`)
 	}
 
 	///
@@ -216,7 +270,7 @@ function filterList(
 	theProperty,
 	theValue
 ){
-	return aql`doc[${theProperty}] IN ${theValue}`                      // ==>
+	return aql`dat[${theProperty}] IN ${theValue}`                      // ==>
 
 } // filterList()
 
@@ -247,8 +301,8 @@ function filterLists(
 	doAll = false
 ){
 	return (doAll)
-		? aql`${theValue.items} ALL IN doc[${theProperty}]`                   // ==>
-		: aql`${theValue.items} ANY IN doc[${theProperty}]`                   // ==>
+		? aql`${theValue.items} ALL IN dat[${theProperty}]`                   // ==>
+		: aql`${theValue.items} ANY IN dat[${theProperty}]`                   // ==>
 
 } // filterLists()
 
@@ -271,7 +325,7 @@ function filterPattern(
 	theProperty,
 	theValue
 ){
-	return aql`LIKE(doc[${theProperty}], ${theValue})`                     // ==>
+	return aql`LIKE(dat[${theProperty}], ${theValue})`                     // ==>
 
 } // filterPattern()
 
@@ -298,7 +352,7 @@ function filterTokens(
 ){
 	return aql`
 		ANALYZER(
-			doc[${theProperty}] IN TOKENS(${theValue}, ${theAnalyzer}),
+			dat[${theProperty}] IN TOKENS(${theValue}, ${theAnalyzer}),
 			${theAnalyzer}
 		)`                                                              // ==>
 
@@ -309,6 +363,7 @@ module.exports = {
 	filterCompare,
 	filterRange,
 	filterDateRange,
+	filterDateInterval,
 	filterIntegerRange,
 	filterList,
 	filterLists,

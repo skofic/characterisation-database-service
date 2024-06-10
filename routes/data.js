@@ -43,6 +43,9 @@ const ModelQueryDescription = dd`
 	Omit the properties that you don't want to search on.
 `
 const ErrorModel = require("../models/error_generic");
+const SortListModel = joi.array()
+	.items(joi.string())
+	.description("List of fields to sort on")
 const opSchema = joi.string()
 	.valid('AND', 'OR')
 	.default('AND')
@@ -69,6 +72,14 @@ const queryLimitSchema = joi.number()
 	.default(25)
 	.required()
 	.description("The query number of elements")
+const sortListSchema = joi.array()
+	.items(joi.string())
+	.default([])
+	.description("The list of fields to sort on")
+const sortOrderSchema = joi.string()
+	.valid("ASC", "DESC")
+	.default("ASC")
+	.description("The sort order")
 
 ///
 // Query parameters.
@@ -110,8 +121,7 @@ router.tag('Data')
  * The service will return all data belonging to the provided dataset identifier,
  * the service also allows limiting data results.
  */
-router.get(
-	':dataset/:start/:limit',
+router.post(
 	(req, res) => {
 		try{
 			res.send(datasetData(req, res))
@@ -124,12 +134,17 @@ router.get(
 	.summary('Get data records')
 	.description(dd`
 		Retrieve data records belonging to the provided dataset.
-		Provide the dataset identifier, the start element and the elements count in the path parameters.
+		Provide the dataset identifier, the start element and the elements count \
+		in the path parameters, optionally provide the list of fields to sort results \
+		and the order.
 	`)
 
-	.pathParam('dataset', datasetSchema)
-	.pathParam('start', queryStartSchema)
-	.pathParam('limit', queryLimitSchema)
+	.queryParam('dataset', datasetSchema)
+	.queryParam('start', queryStartSchema)
+	.queryParam('limit', queryLimitSchema)
+	.queryParam('order', sortOrderSchema)
+
+	.body(SortListModel)
 
 	.response([Model], ModelDescription)
 
@@ -139,7 +154,6 @@ router.get(
  * The service will return dataset statistics if possible.
  */
 router.get(
-	':dataset/:stat/:summary',
 	(req, res) => {
 		try{
 			res.send(datasetSummary(req, res))
@@ -156,9 +170,9 @@ router.get(
 		descriptor global identifier on which to summarise in the path parameters.
 	`)
 
-	.pathParam('dataset', datasetSchema)
-	.pathParam('stat', opStat)
-	.pathParam('summary', opSummary)
+	.queryParam('dataset', datasetSchema)
+	.queryParam('stat', opStat)
+	.queryParam('summary', opSummary)
 
 	.response([joi.object()])
 	.response(404, ErrorModel, "Dataset not found.")
@@ -172,7 +186,7 @@ router.get(
  * data results.
  */
 router.post(
-	'query/:dataset/:op/:start/:limit',
+	'query',
 	(req, res) => {
 		try{
 			res.send(searchData(req, res))
@@ -187,12 +201,13 @@ router.post(
 		The service will allow querying the data elements belonging to the provided dataset.
 	`)
 
-	.pathParam('dataset', datasetSchema)
-	.pathParam('op', opSchema)
-	.pathParam('start', queryStartSchema)
-	.pathParam('limit', queryLimitSchema)
+	.queryParam('dataset', datasetSchema)
+	.queryParam('op', opSchema)
+	.queryParam('start', queryStartSchema)
+	.queryParam('limit', queryLimitSchema)
 
 	.body(ModelQuery, ModelQueryDescription)
+
 	.response([Model])
 
 
@@ -218,9 +233,24 @@ function datasetData(request, response)
 	///
 	// Get chain operator.
 	///
-	const dset = request.pathParams.dataset
-	const start = request.pathParams.start
-	const limit = request.pathParams.limit
+	const dset = request.queryParams.dataset
+	const start = request.queryParams.start
+	const limit = request.queryParams.limit
+	const order = request.queryParams.order
+
+	const sort = request.body
+
+	///
+	// Set sort statement.
+	///
+	let sortElements = []
+	let sortStatement = aql``
+	if(sort.length > 0) {
+		sortElements.push(aql`SORT`)
+		sortElements.push(aql`${sort.join(", ")}`)
+		sortElements.push(aql`${order}`)
+		sortStatement = aql.join(sortElements, "\n")
+	}
 
 	///
 	// Determine dataset type.
@@ -256,6 +286,8 @@ function datasetData(request, response)
 		                }
 		            }
 		        )
+		        
+		        ${sortStatement}
 		
 		    RETURN MERGE(
 		        UNSET(
@@ -299,9 +331,9 @@ function datasetSummary(request, response)
 	///
 	// Get parameters.
 	///
-	const dset = request.pathParams.dataset
-	const stat = request.pathParams.stat
-	const summary = request.pathParams.summary
+	const dset = request.queryParams.dataset
+	const stat = request.queryParams.stat
+	const summary = request.queryParams.summary
 
 	///
 	// Get dataset.
@@ -348,10 +380,10 @@ function searchData(request, response)
 	///
 	// Get chain operator.
 	///
-	const op = request.pathParams.op
-	const dataset = request.pathParams.dataset
-	const start = request.pathParams.start
-	const limit = request.pathParams.limit
+	const op = request.queryParams.op
+	const dataset = request.queryParams.dataset
+	const start = request.queryParams.start
+	const limit = request.queryParams.limit
 
 	///
 	// Get query filters.
@@ -376,11 +408,11 @@ function searchData(request, response)
 		        SEARCH dat.std_dataset_id == set._key AND
 				       ( ${aql.join(filters, ` ${op} `)} )
 		        LIMIT ${start}, ${limit}
-		
+
 		        LET meta = (
 		            FOR doc IN markers
 		                FILTER doc.species == dat.species
-		                
+
 		            RETURN {
 		                [CONCAT_SEPARATOR("_", doc.chr_GenIndex, "marker")]: doc.chr_SequenceLength == null ? {
 		                    [doc.chr_GenIndex]: dat[doc.chr_GenIndex],
@@ -396,7 +428,7 @@ function searchData(request, response)
 		                }
 		            }
 		        )
-		
+
 		    RETURN MERGE(
 		        UNSET(
 		            dat,
@@ -474,16 +506,16 @@ function datasetDataSummary(
 	const query = aql`
 	    FOR dat IN VIEW_DATA
 	        SEARCH dat.std_dataset_id == ${theDataset._key}
-	        
+
 	        COLLECT summary = dat[${theField}]
 	        INTO groups
-	        
+
 	        LET quants = (
 	            FOR field IN ${theDataset.std_terms_quant}
 	            LET value = ${stat}
 	            RETURN value != null ? { [field]: ${stat} } : {}
 	        )
-	
+
 	    RETURN MERGE(
 	        { [${theField}]: summary },
 	        MERGE_RECURSIVE(quants)
@@ -559,10 +591,10 @@ function datasetGeneticSummary(
 	            SEARCH dat.std_dataset_id == ${theDataset._key}
 	            COLLECT species = dat.species
 	            INTO groups
-	            
+
 	        FOR doc IN ${theDataset.std_dataset_markers}
 	            FILTER doc.species == species
-	    
+
 	        RETURN {
 	            species: species,
 	            properties: {
@@ -581,11 +613,11 @@ function datasetGeneticSummary(
 	            }
 	        }
 	    )
-		
+
 		FOR item IN items
 		    COLLECT species = item.species
 		    INTO groups
-		    
+
 		RETURN MERGE(
 			{ species: species },
 			MERGE_RECURSIVE(groups[*].item.properties)
@@ -629,7 +661,7 @@ function dataQueryFilters(request, response)
 				break
 
 			case 'std_date':
-				filter = queryFilters.filterDateRange(value)
+				filter = queryFilters.filterDateInterval(value)
 				break
 
 			case 'chr_tree_code':

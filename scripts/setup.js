@@ -5,6 +5,7 @@
 ///
 const {db} = require('@arangodb')
 const {context} = require('@arangodb/locals')
+const analyzers = require("@arangodb/analyzers")
 
 ///
 // Database information.
