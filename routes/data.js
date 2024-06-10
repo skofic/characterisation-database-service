@@ -37,7 +37,7 @@ const ModelQuery = require('../models/dataQuery')
 const ModelQueryDescription = dd`
 	The body is an object that contains the query parameters:
 	- \`gcu_id_number\`: GCU identifier, provide a wildcard search string.
-	- \`std_date\`: Data measurement date range, provide start and end dates with inclusion flags.
+	- \`std_date\`: Data measurement date range, provide start and end dates.
 	- \`species\`: Scientific name, provide space delimited keywords.
 	- \`chr_tree_code\`: Tree identifier codes, provide list of tree codes.\n
 	Omit the properties that you don't want to search on.

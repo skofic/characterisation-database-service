@@ -79,7 +79,7 @@ const ModelCategoriesDescription = dd`
 	The service will return the following dataset statistics:
 	- \`count\`: Number of data records.
 	- \`std_date_start\`: Data start date.
-	- \`std_date_endt\`: Data end date.
+	- \`std_date_end\`: Data end date.
 	- \`_subject\`: List of subjects featured in data descriptors.
 	- \`_classes\`: List of classes featured in data descriptors.
 	- \`_domain\`: List of domains featured in data descriptors.
