@@ -21,7 +21,7 @@
     "configuration": {
         "data_coll_name": {
             "description": "Data collection name.",
-            "default": "Data",
+            "default": "data",
             "type": "string"
         },
 		"data_view_name": {
@@ -31,7 +31,7 @@
 		},
 		"dataset_coll_name": {
 			"description": "Dataset collection name.",
-			"default": "Dataset",
+			"default": "dataset",
 			"type": "string"
 		},
 		"dataset_view_name": {
