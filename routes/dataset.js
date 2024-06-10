@@ -137,7 +137,7 @@ router.tag('Dataset')
  * it will return the list of matching dataset objects.
  */
 router.post(
-	'query/obj/:op',
+	'query',
 	(req, res) => {
 		try{
 			res.send(searchDatasetObjects(req, res))
@@ -154,8 +154,10 @@ router.post(
 		dataset objects.
 	`)
 
-	.pathParam('op', opSchema)
+	.queryParam('op', opSchema)
+
 	.body(ModelQuery, ModelQueryDescription)
+
 	.response([Model], ModelDescription)
 
 /**
@@ -170,7 +172,7 @@ router.post(
  * data.
  */
 router.get(
-	'qual/:key',
+	'qual',
 	(req, res) => {
 		try{
 			res.send(getDatasetCategories(req, res))
@@ -188,7 +190,8 @@ router.get(
 		except that in this case the statistics are returned dynamically.
 	`)
 
-	.pathParam('key', keySchema)
+	.queryParam('key', keySchema)
+
 	.response(ModelCategories, ModelCategoriesDescription)
 
 /**
@@ -244,7 +247,7 @@ function searchDatasetObjects(request, response)
 	///
 	// Get chain operator.
 	///
-	const op = request.pathParams.op
+	const op = request.queryParams.op
 
 	///
 	// Get query filters.
@@ -286,7 +289,7 @@ function getDatasetCategories(request, response)
 	///
 	// Get chain operator.
 	///
-	const key = request.pathParams.key
+	const key = request.queryParams.key
 
 	///
 	// Build filters block.
@@ -363,6 +366,8 @@ function getDatasetCategories(request, response)
 			if(result[key] === null) {
 				delete result[key]
 			} else if(Array.isArray(value) && value.length === 0) {
+				delete result[key]
+			} else if(Array.isArray(value) && value.length === 1 && value[0] === null) {
 				delete result[key]
 			}
 		}
