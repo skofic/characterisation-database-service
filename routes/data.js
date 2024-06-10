@@ -43,9 +43,6 @@ const ModelQueryDescription = dd`
 	Omit the properties that you don't want to search on.
 `
 const ErrorModel = require("../models/error_generic");
-const SortListModel = joi.array()
-	.items(joi.string())
-	.description("List of fields to sort on")
 const opSchema = joi.string()
 	.valid('AND', 'OR')
 	.default('AND')
@@ -121,7 +118,7 @@ router.tag('Data')
  * The service will return all data belonging to the provided dataset identifier,
  * the service also allows limiting data results.
  */
-router.post(
+router.get(
 	(req, res) => {
 		try{
 			res.send(datasetData(req, res))
@@ -135,16 +132,12 @@ router.post(
 	.description(dd`
 		Retrieve data records belonging to the provided dataset.
 		Provide the dataset identifier, the start element and the elements count \
-		in the path parameters, optionally provide the list of fields to sort results \
-		and the order.
+		in the path query parameters.
 	`)
 
 	.queryParam('dataset', datasetSchema)
 	.queryParam('start', queryStartSchema)
 	.queryParam('limit', queryLimitSchema)
-	.queryParam('order', sortOrderSchema)
-
-	.body(SortListModel)
 
 	.response([Model], ModelDescription)
 
@@ -154,6 +147,7 @@ router.post(
  * The service will return dataset statistics if possible.
  */
 router.get(
+	'stat',
 	(req, res) => {
 		try{
 			res.send(datasetSummary(req, res))
@@ -236,21 +230,6 @@ function datasetData(request, response)
 	const dset = request.queryParams.dataset
 	const start = request.queryParams.start
 	const limit = request.queryParams.limit
-	const order = request.queryParams.order
-
-	const sort = request.body
-
-	///
-	// Set sort statement.
-	///
-	let sortElements = []
-	let sortStatement = aql``
-	if(sort.length > 0) {
-		sortElements.push(aql`SORT`)
-		sortElements.push(aql`${sort.join(", ")}`)
-		sortElements.push(aql`${order}`)
-		sortStatement = aql.join(sortElements, "\n")
-	}
 
 	///
 	// Determine dataset type.
@@ -286,9 +265,7 @@ function datasetData(request, response)
 		                }
 		            }
 		        )
-		        
-		        ${sortStatement}
-		
+		        		
 		    RETURN MERGE(
 		        UNSET(
 		            dat,
