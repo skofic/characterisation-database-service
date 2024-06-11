@@ -1,0 +1,281 @@
+{
+  "info": {
+    "name": "Characterisation API Document.paw",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "DATASET",
+      "item": [
+        {
+          "name": "Query",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{Protocol}}://{{Host}}:{{Port}}/_db/{{Db}}/{{Path}}/dataset/query?op=AND",
+              "query": [
+                {
+                  "key": "op",
+                  "value": "AND",
+                  "disabled": false,
+                  "description": "Chaining operator for query filters"
+                }
+              ],
+              "protocol": null,
+              "host": [
+                "{{Protocol}}://{{Host}}:{{Port}}/_db/{{Db}}/{{Path}}/dataset/query"
+              ],
+              "port": null,
+              "path": null
+            },
+            "description": "Use this service to query datasets.\n\nThis service can be used to select datasets according to a set of criteria.\n\nThe service expects the chaining operator, `op`, as a query path parameter. `AND` indicates that the dataset will be selected if *all selection criteria* is satisfied, `OR` if *at least one* matches. It defaults to `AND`.\n\nThe selection criteria is provided in the request body:\n\n- `_key`: Match a list of dataset primary keys.\n- `std_project`: Match a list of project codes.\n- `std_dataset`: Match dataset project codes using a wildcard search string. The supported wildcards are `_` to match a single arbitrary character, and `%` to match any number of arbitrary characters. Literal `%` and `_` need to be escaped with a backslash. Backslashes need to be escaped themselves.\n- `std_date`: Match datasets whose `std_date_start` and `std_date_end` are within the date range expressed by the provided object `std_date_start` and `std_date_end` properties.\n- `std_date_submission`: Match datasets whose submission date is within the `min` and `max` time interval.\n- `_title`: Provide space delimited keywords to search dataset title.\n- `_description`: Provide space delimited keywords to search dataset description.\n- `_citation`: Provide space delimited keywords to search dataset citations.\n- `count`: Provide a `min` and `max` range to select datasets whose data record count lies in the interval.\n- `_subject`: Match a list of `_subject` *category codes*. Subjects are category codes associated to descriptors belonging to the dataset data collection.\n- `_classes`: Provide a list of _class category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Classes are category codes associated to descriptors belonging to the dataset data collection.\n- `_domain`: Provide a list of `_domain` category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Domains are category codes associated to descriptors belonging to the dataset data collection.\n- `_tag`: Provide a list of `_tag` category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Tags are category codes associated to descriptors belonging to the dataset data collection.\n- `species_list`: Provide space delimited keywords to search scientific names used in data.\n- `std_terms`: Provide a list of descriptor names used in the dataset data. Set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*.\n- `std_terms_quant`: Provide a list of quantitative descriptor names used in the dataset data. Set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*.\n- `std_terms_key`: Provide a list of dataset *key* fields, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Key fields represent the combination of fields that make a data record unique.\n- `std_terms_summary`: Provide a list of dataset *summary* fields, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Summary fields are those fields that can be *summarised* as *average*, *maximum*, *etc*.\n\nOmit the top level properties that should be ignored.\n\nIf the service is successful it will return the list of matched dataset records [`200`].\n\nIf the operation does not succeed, the service will return:\n\n- `500`: For other types of error.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "description": null
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "disabled": false,
+              "raw": "{\"_key\":[\"8194f5d7-b446-4dbc-b218-98fd2cb61091\",\"8194f5d7-b446-4dbc-b218-98fd2cb61093\",\"8194f5d7-b446-4dbc-b218-98fd2cb61094\"],\"std_project\":[\"FORGENIUS\"],\"std_dataset\":\"%WP1_MODEL\",\"std_date\":{\"std_date_start\":\"1949\",\"std_date_end\":\"2023\"},\"std_date_submission\":{\"min\":\"2023\",\"max\":\"20231231\"},\"_title\":\"risk vulnerability FORGENIUS D4.3\",\"_description\":\"4TREE Axiom assay Dufr\\u00eane monthly\",\"count\":{\"min\":20,\"max\":100000},\"_subject\":[\"chr_subject_stand\"],\"_classes\":{\"items\":[\"_class_time\",\"_class_quantity\",\"_class_quantity_averaged\"],\"doAll\":false},\"_domain\":{\"items\":[\"chr_gent\",\"chr_envi\",\"chr_model\"],\"doAll\":false},\"species_list\":\"sylvatica Quercus Pinus\",\"std_terms\":{\"items\":[\"chr_ExpHet\",\"chr_AvYearDroughtIdx\",\"chr_LandSurfTemp\"],\"doAll\":false},\"std_terms_quant\":{\"items\":[\"chr_AvGrossPrimProd\",\"chr_AvYearDroughtIdx\",\"chr_ExpHet\"],\"doAll\":false},\"std_terms_key\":{\"items\":[\"gcu_id_number\",\"std_date\"],\"doAll\":true},\"std_terms_summary\":{\"items\":[\"gcu_id_number\",\"std_date\"],\"doAll\":true}}"
+            },
+            "auth": null
+          },
+          "protocolProfileBehavior": {
+            "followRedirects": false,
+            "followOriginalHttpMethod": false,
+            "followAuthorizationHeader": false
+          },
+          "response": []
+        },
+        {
+          "name": "Summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{Protocol}}://{{Host}}:{{Port}}/_db/{{Db}}/{{Path}}/dataset/qual?key=8194f5d7-b446-4dbc-b218-98fd2cb61091",
+              "query": [
+                {
+                  "key": "key",
+                  "value": "8194f5d7-b446-4dbc-b218-98fd2cb61091",
+                  "disabled": false,
+                  "description": "Dataset primary key"
+                }
+              ],
+              "protocol": null,
+              "host": [
+                "{{Protocol}}://{{Host}}:{{Port}}/_db/{{Db}}/{{Path}}/dataset/qual"
+              ],
+              "port": null,
+              "path": null
+            },
+            "description": "Use this service to get dataset summary data.\n\nThis service can be used to retrieve summary data for the dataset querying the dataset's data records.\n\nThe service expects the dataset primary key, `key`, as a query path parameter. If the dataset is matched, the service will return the summary of all data belonging to the dataset for the following fields:\n\n- `count`: Number of data records.\n- `std_date_start`: Date range start.\n- `std_date_end`: Date range end.\n- `_subject`: List of `_subject` categories featured in the data descriptors.\n- `_subject`: List of `_subject` categories featured in the data descriptors.\n- `_classes`: List of `_class` categories featured in the data descriptors.\n- `_domain`: List of `_subject` categories featured in the data descriptors.\n- `_tag`: List of `_tag` categories featured in the data descriptors.\n- `species_list`: List of featured scientific names featured in data.\n- `std_terms`: List of descriptors featured in data.\n- `std_terms_quant`: List of quantitative descriptors featured in data.\n\n*This service will dynamically query the data records belonging to the dataset, none of the corresponding fields stored in the dataset record will be returned.* Use this service to get up to date data statistics.\n\nThe service will return:\n\n- `200`: If *successful*, the service will return the full dataset record matching the search criteria.\n- `500`: *Any error*.",
+            "header": [],
+            "body": null,
+            "auth": null
+          },
+          "protocolProfileBehavior": {
+            "followRedirects": false,
+            "followOriginalHttpMethod": false,
+            "followAuthorizationHeader": false
+          },
+          "response": []
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{Protocol}}://{{Host}}:{{Port}}/_db/{{Db}}/{{Path}}/dataset/update",
+              "query": null,
+              "protocol": null,
+              "host": [
+                "{{Protocol}}://{{Host}}:{{Port}}/_db/{{Db}}/{{Path}}/dataset/update"
+              ],
+              "port": null,
+              "path": null
+            },
+            "description": "Use this service to update the dataset statistics.\n\nThis service can be used to update the dataset statistics related to its selection of data records.\n\nThe service expects a list of dataset primary keys in the request body, the service will update the statistics fields for all matched datasets.\n\nThis service will dynamically query the data records belonging to the dataset. See the Summary service for the list of involved descriptors.\n\nThe service will return:\n\n200: If successful, the service will return the matched full dataset records.\n500: Any error.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "description": null
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "disabled": false,
+              "raw": "[\"8194f5d7-b446-4dbc-b218-98fd2cb61091\"]"
+            },
+            "auth": null
+          },
+          "protocolProfileBehavior": {
+            "followRedirects": false,
+            "followOriginalHttpMethod": false,
+            "followAuthorizationHeader": false
+          },
+          "response": []
+        }
+      ],
+      "protocolProfileBehavior": null,
+      "response": []
+    },
+    {
+      "name": "DATA",
+      "item": [
+        {
+          "name": "Scan",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{Protocol}}://{{Host}}:{{Port}}/_db/{{Db}}/{{Path}}/data?dataset=8194f5d7-b446-4dbc-b218-98fd2cb61091&start=0&limit=25",
+              "query": [
+                {
+                  "key": "dataset",
+                  "value": "8194f5d7-b446-4dbc-b218-98fd2cb61091",
+                  "disabled": false,
+                  "description": "Dataset primary key"
+                },
+                {
+                  "key": "start",
+                  "value": "0",
+                  "disabled": false,
+                  "description": "Record start index"
+                },
+                {
+                  "key": "limit",
+                  "value": "25",
+                  "disabled": false,
+                  "description": "Number of records to return"
+                }
+              ],
+              "protocol": null,
+              "host": [
+                "{{Protocol}}://{{Host}}:{{Port}}/_db/{{Db}}/{{Path}}/data"
+              ],
+              "port": null,
+              "path": null
+            },
+            "description": "Use this service to retrieve data from a dataset.\n\nThis service can be used to paginate through all data belonging to a specific dataset.\n\nThe service expects the dataset primary key, `dataset`, the query starty element, `start`, and the number of records to return, `limit`, as a query path parameters.\n\nThe service can be used to iterate a dataset's data using paging; the data is returned in an undefined order.\n\nThe service will return:\n\n200: If successful, the service will return the data page.\n500: Any error.",
+            "header": [],
+            "body": null,
+            "auth": null
+          },
+          "protocolProfileBehavior": {
+            "followRedirects": false,
+            "followOriginalHttpMethod": false,
+            "followAuthorizationHeader": false
+          },
+          "response": []
+        },
+        {
+          "name": "Summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{Protocol}}://{{Host}}:{{Port}}/_db/{{Db}}/{{Path}}/data/stat?dataset=8194f5d7-b446-4dbc-b218-98fd2cb61097&stat=MAX&summary=gcu_id_number",
+              "query": [
+                {
+                  "key": "dataset",
+                  "value": "8194f5d7-b446-4dbc-b218-98fd2cb61097",
+                  "disabled": false,
+                  "description": "Dataset primary key"
+                },
+                {
+                  "key": "stat",
+                  "value": "MAX",
+                  "disabled": false,
+                  "description": "Statistical function to apply"
+                },
+                {
+                  "key": "summary",
+                  "value": "gcu_id_number",
+                  "disabled": false,
+                  "description": "Summary descriptor global identifier"
+                }
+              ],
+              "protocol": null,
+              "host": [
+                "{{Protocol}}://{{Host}}:{{Port}}/_db/{{Db}}/{{Path}}/data/stat"
+              ],
+              "port": null,
+              "path": null
+            },
+            "description": "Use this service to get summary data.\n\nThis service can be used to retrieve summary data for a specific descriptor belonging to a specific dataset.\n\nThe service expects the dataset primary key, `dataset`, the statistical function, `stat`, and the descriptor global identifier, `summary`, as a query path parameters.\n\nThe available statistical functions, provided in `stat`, are:\n\n- `MIN`: minimum.\n- `MAX`: maximum.\n- `AVG`: average.\n- `MEDIAN`: median.\n- `STDDEV`: standard deviation.\n- `VARIANCE`: variance.\n\nThe descriptor provided in `summary` must be part of the dataset list of summary fields, `std_terms_summary`, if that is not the case the service will return an error.\n\nIf successful, [`200`], the service will return one record for each distinct value of the descriptor provided in `summary` containing all quantitative data values summarised according to the function selected in `stat`.\n\nIf unsuccessful, the service will return:\n\n- `400`: Descriptor not a summary field.\n- `404`: Dataset not found.\n- `500`: *Any other error*.",
+            "header": [],
+            "body": null,
+            "auth": null
+          },
+          "protocolProfileBehavior": {
+            "followRedirects": false,
+            "followOriginalHttpMethod": false,
+            "followAuthorizationHeader": false
+          },
+          "response": []
+        },
+        {
+          "name": "Query",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{Protocol}}://{{Host}}:{{Port}}/_db/{{Db}}/{{Path}}/data/query?dataset=291ea3ef-8fbc-409b-a1c1-9a898eb1af3a&op=AND&start=0&limit=25",
+              "query": [
+                {
+                  "key": "dataset",
+                  "value": "291ea3ef-8fbc-409b-a1c1-9a898eb1af3a",
+                  "disabled": false,
+                  "description": "dataset primary key"
+                },
+                {
+                  "key": "op",
+                  "value": "AND",
+                  "disabled": false,
+                  "description": "Chaining operator for filters: AND or OR"
+                },
+                {
+                  "key": "start",
+                  "value": "0",
+                  "disabled": false,
+                  "description": "Results start index"
+                },
+                {
+                  "key": "limit",
+                  "value": "25",
+                  "disabled": false,
+                  "description": "Number of records in page"
+                }
+              ],
+              "protocol": null,
+              "host": [
+                "{{Protocol}}://{{Host}}:{{Port}}/_db/{{Db}}/{{Path}}/data/query"
+              ],
+              "port": null,
+              "path": null
+            },
+            "description": "Use this service to query data records.\n\nThis service can be used to query data records belonging to a specific dataset using a selection criteria.\n\nThe service expects the dataset primary key, `dataset`, the chaining operator for query filters, `op`, the results start index, `start`, and the number of records to return, `limit`, as a query path parameters.\n\nThe chaining operator in `op` can be either `AND` to ensure all criteria is matched, or `OR` to match at least one criteria.\n\nThe selection criteria is provided in the request body::\n\n- `gcu_id_number`: GCU identifier, provide a wildcard search string. The supported wildcards are `_` to match a single arbitrary character, and `%` to match any number of arbitrary characters. Literal `%` and `_` need to be escaped with a backslash. Backslashes need to be escaped themselves.\n- `std_date`: Provide the start and end dates to select data belonging to that time period. Note that the date range will be applied to the `std_date` property in data records.\n- `species`: Provide a list of space delimited tokens to search scientific names.\n- `chr_tree_code`: Provide a list of matching tree codes.\n\nTo ignore a selection criteria just omit the top level property.\n\nIf successful, [`200`], the service will return the page of records matching the selection criteria.\n\nIf unsuccessful, the service will return:\n\n- `500`: *Any other error*.",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "disabled": false,
+              "raw": "{\n  \"gcu_id_number\": \"ESP00179\",\n  \"std_date\": {\n    \"std_date_start\": \"2022\",\n    \"std_date_end\": \"20221231\"\n  },\n  \"species\": \"sylvatica\",\n  \"chr_tree_code\": [\n    \"ESP00179-007\"\n  ]\n}"
+            },
+            "auth": null
+          },
+          "protocolProfileBehavior": {
+            "followRedirects": false,
+            "followOriginalHttpMethod": false,
+            "followAuthorizationHeader": false
+          },
+          "response": []
+        }
+      ],
+      "protocolProfileBehavior": null,
+      "response": []
+    }
+  ]
+}

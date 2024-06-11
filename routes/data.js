@@ -169,6 +169,7 @@ router.get(
 	.queryParam('summary', opSummary)
 
 	.response([joi.object()])
+	.response(400, ErrorModel, "Descriptor not a summary field.")
 	.response(404, ErrorModel, "Dataset not found.")
 	.response(400, ErrorModel, "All other user errors.")
 

@@ -1,0 +1,1716 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Characterisation API Document.paw",
+    "description": "",
+    "version": "1.0.0",
+    "contact": {
+      "name": "milko",
+      "email": "skofic@gmail.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://echo.paw.cloud/",
+      "description": ""
+    }
+  ],
+  "paths": {
+    "/{Protocol}:/{Host}:{Port}/_db/{Db}/{Path}/dataset/query/": {
+      "post": {
+        "summary": "Query",
+        "description": "Use this service to query datasets.\n\nThis service can be used to select datasets according to a set of criteria.\n\nThe service expects the chaining operator, `op`, as a query path parameter. `AND` indicates that the dataset will be selected if *all selection criteria* is satisfied, `OR` if *at least one* matches. It defaults to `AND`.\n\nThe selection criteria is provided in the request body:\n\n- `_key`: Match a list of dataset primary keys.\n- `std_project`: Match a list of project codes.\n- `std_dataset`: Match dataset project codes using a wildcard search string. The supported wildcards are `_` to match a single arbitrary character, and `%` to match any number of arbitrary characters. Literal `%` and `_` need to be escaped with a backslash. Backslashes need to be escaped themselves.\n- `std_date`: Match datasets whose `std_date_start` and `std_date_end` are within the date range expressed by the provided object `std_date_start` and `std_date_end` properties.\n- `std_date_submission`: Match datasets whose submission date is within the `min` and `max` time interval.\n- `_title`: Provide space delimited keywords to search dataset title.\n- `_description`: Provide space delimited keywords to search dataset description.\n- `_citation`: Provide space delimited keywords to search dataset citations.\n- `count`: Provide a `min` and `max` range to select datasets whose data record count lies in the interval.\n- `_subject`: Match a list of `_subject` *category codes*. Subjects are category codes associated to descriptors belonging to the dataset data collection.\n- `_classes`: Provide a list of _class category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Classes are category codes associated to descriptors belonging to the dataset data collection.\n- `_domain`: Provide a list of `_domain` category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Domains are category codes associated to descriptors belonging to the dataset data collection.\n- `_tag`: Provide a list of `_tag` category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Tags are category codes associated to descriptors belonging to the dataset data collection.\n- `species_list`: Provide space delimited keywords to search scientific names used in data.\n- `std_terms`: Provide a list of descriptor names used in the dataset data. Set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*.\n- `std_terms_quant`: Provide a list of quantitative descriptor names used in the dataset data. Set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*.\n- `std_terms_key`: Provide a list of dataset *key* fields, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Key fields represent the combination of fields that make a data record unique.\n- `std_terms_summary`: Provide a list of dataset *summary* fields, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Summary fields are those fields that can be *summarised* as *average*, *maximum*, *etc*.\n\nOmit the top level properties that should be ignored.\n\nIf the service is successful it will return the list of matched dataset records [`200`].\n\nIf the operation does not succeed, the service will return:\n\n- `500`: For other types of error.",
+        "operationId": "fbf54a75-fd0b-4b80-94aa-4f094bfe55c4",
+        "parameters": [
+          {
+            "name": "op",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "AND",
+              "description": ""
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "application/json; charset=utf-8",
+              "description": ""
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Use this service to query datasets.\n\nThis service can be used to select datasets according to a set of criteria.\n\nThe service expects the chaining operator, `op`, as a query path parameter. `AND` indicates that the dataset will be selected if *all selection criteria* is satisfied, `OR` if *at least one* matches. It defaults to `AND`.\n\nThe selection criteria is provided in the request body:\n\n- `_key`: Match a list of dataset primary keys.\n- `std_project`: Match a list of project codes.\n- `std_dataset`: Match dataset project codes using a wildcard search string. The supported wildcards are `_` to match a single arbitrary character, and `%` to match any number of arbitrary characters. Literal `%` and `_` need to be escaped with a backslash. Backslashes need to be escaped themselves.\n- `std_date`: Match datasets whose `std_date_start` and `std_date_end` are within the date range expressed by the provided object `std_date_start` and `std_date_end` properties.\n- `std_date_submission`: Match datasets whose submission date is within the `min` and `max` time interval.\n- `_title`: Provide space delimited keywords to search dataset title.\n- `_description`: Provide space delimited keywords to search dataset description.\n- `_citation`: Provide space delimited keywords to search dataset citations.\n- `count`: Provide a `min` and `max` range to select datasets whose data record count lies in the interval.\n- `_subject`: Match a list of `_subject` *category codes*. Subjects are category codes associated to descriptors belonging to the dataset data collection.\n- `_classes`: Provide a list of _class category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Classes are category codes associated to descriptors belonging to the dataset data collection.\n- `_domain`: Provide a list of `_domain` category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Domains are category codes associated to descriptors belonging to the dataset data collection.\n- `_tag`: Provide a list of `_tag` category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Tags are category codes associated to descriptors belonging to the dataset data collection.\n- `species_list`: Provide space delimited keywords to search scientific names used in data.\n- `std_terms`: Provide a list of descriptor names used in the dataset data. Set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*.\n- `std_terms_quant`: Provide a list of quantitative descriptor names used in the dataset data. Set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*.\n- `std_terms_key`: Provide a list of dataset *key* fields, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Key fields represent the combination of fields that make a data record unique.\n- `std_terms_summary`: Provide a list of dataset *summary* fields, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Summary fields are those fields that can be *summarised* as *average*, *maximum*, *etc*.\n\nOmit the top level properties that should be ignored.\n\nIf the service is successful it will return the list of matched dataset records [`200`].\n\nIf the operation does not succeed, the service will return:\n\n- `500`: For other types of error.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "std_terms_quant": {
+                    "type": "object",
+                    "properties": {
+                      "items": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "chr_AvGrossPrimProd",
+                          "chr_AvYearDroughtIdx",
+                          "chr_ExpHet"
+                        ]
+                      },
+                      "doAll": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "_domain": {
+                    "type": "object",
+                    "properties": {
+                      "items": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "chr_gent",
+                          "chr_envi",
+                          "chr_model"
+                        ]
+                      },
+                      "doAll": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "count": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 20
+                      },
+                      "max": {
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 100000
+                      }
+                    }
+                  },
+                  "std_terms_key": {
+                    "type": "object",
+                    "properties": {
+                      "items": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "gcu_id_number",
+                          "std_date"
+                        ]
+                      },
+                      "doAll": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "_title": {
+                    "type": "string",
+                    "example": "risk vulnerability FORGENIUS D4.3"
+                  },
+                  "std_terms_summary": {
+                    "type": "object",
+                    "properties": {
+                      "items": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "gcu_id_number",
+                          "std_date"
+                        ]
+                      },
+                      "doAll": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "species_list": {
+                    "type": "string",
+                    "example": "sylvatica Quercus Pinus"
+                  },
+                  "std_date": {
+                    "type": "object",
+                    "properties": {
+                      "std_date_start": {
+                        "type": "string",
+                        "example": "1949"
+                      },
+                      "std_date_end": {
+                        "type": "string",
+                        "example": "2023"
+                      }
+                    }
+                  },
+                  "_classes": {
+                    "type": "object",
+                    "properties": {
+                      "items": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "_class_time",
+                          "_class_quantity",
+                          "_class_quantity_averaged"
+                        ]
+                      },
+                      "doAll": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "_subject": {
+                    "type": "string",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "chr_subject_stand"
+                    ]
+                  },
+                  "_key": {
+                    "type": "string",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "8194f5d7-b446-4dbc-b218-98fd2cb61091",
+                      "8194f5d7-b446-4dbc-b218-98fd2cb61093",
+                      "8194f5d7-b446-4dbc-b218-98fd2cb61094"
+                    ]
+                  },
+                  "std_dataset": {
+                    "type": "string",
+                    "example": "%WP1_MODEL"
+                  },
+                  "std_date_submission": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "string",
+                        "example": "2023"
+                      },
+                      "max": {
+                        "type": "string",
+                        "example": "20231231"
+                      }
+                    }
+                  },
+                  "_description": {
+                    "type": "string",
+                    "example": "4TREE Axiom assay Dufrêne monthly"
+                  },
+                  "std_project": {
+                    "type": "string",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "FORGENIUS"
+                    ]
+                  },
+                  "std_terms": {
+                    "type": "object",
+                    "properties": {
+                      "items": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "chr_ExpHet",
+                          "chr_AvYearDroughtIdx",
+                          "chr_LandSurfTemp"
+                        ]
+                      },
+                      "doAll": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_key": {
+                        "type": "string",
+                        "example": "8194f5d7-b446-4dbc-b218-98fd2cb61093"
+                      },
+                      "_description": {
+                        "type": "object",
+                        "properties": {
+                          "iso_639_3_eng": {
+                            "type": "string",
+                            "example": "Modelled vulnerability and risk indices at the level of each GCU and for each of the populations (species) studied, with one value is available per year from 1950. The models used are SurEau (Ruffault et al., 2022) and Castanea (Dufrêne et al, 2005). Climatic data were obtained from ERA5-land, soil data from soilgrids250 and LAI from MODIS."
+                          }
+                        }
+                      },
+                      "_subject": {
+                        "type": "string",
+                        "example": "chr_subject_stand"
+                      },
+                      "_title": {
+                        "type": "object",
+                        "properties": {
+                          "iso_639_3_eng": {
+                            "type": "string",
+                            "example": "Modelled vulnerability and risk indices for FORGENIUS"
+                          }
+                        }
+                      },
+                      "std_dataset": {
+                        "type": "string",
+                        "example": "FORGENIUS_WP1_MODEL"
+                      },
+                      "std_date_submission": {
+                        "type": "string",
+                        "example": "20231111"
+                      },
+                      "std_project": {
+                        "type": "string",
+                        "example": "FORGENIUS"
+                      },
+                      "std_terms_key": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "gcu_id_number",
+                          "species",
+                          "std_date"
+                        ]
+                      },
+                      "std_terms_summary": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "gcu_id_number",
+                          "species",
+                          "std_date"
+                        ]
+                      },
+                      "std_terms": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "chr_AvYearDroughtIdx",
+                          "chr_CarbonStarvation",
+                          "chr_DessiccationTolerance",
+                          "chr_FrostDamage",
+                          "chr_VulWildFire",
+                          "gcu_id_number",
+                          "species",
+                          "std_date"
+                        ]
+                      },
+                      "std_terms_quant": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "chr_AvYearDroughtIdx",
+                          "chr_CarbonStarvation",
+                          "chr_DessiccationTolerance",
+                          "chr_FrostDamage",
+                          "chr_VulWildFire"
+                        ]
+                      },
+                      "_domain": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "chr_model"
+                        ]
+                      },
+                      "_classes": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "_class_category",
+                          "_class_identifier",
+                          "_class_quantity",
+                          "_class_time"
+                        ]
+                      },
+                      "species_list": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "Fagus sylvatica",
+                          "Picea abies",
+                          "Pinus sylvestris",
+                          "Quercus petraea",
+                          "Quercus robur"
+                        ]
+                      },
+                      "_subjects": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "chr_subject_stand"
+                        ]
+                      },
+                      "std_date_end": {
+                        "type": "string",
+                        "example": "2020"
+                      },
+                      "std_date_start": {
+                        "type": "string",
+                        "example": "1950"
+                      },
+                      "count": {
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 90880
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Pragma": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "nosniff"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "frame-ancestors 'self'; form-action 'self';"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "max-age=31536000 ; includeSubDomains"
+                }
+              },
+              "Server": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "ArangoDB"
+                }
+              },
+              "Content-Type": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "application/json; charset=utf-8"
+                }
+              },
+              "Cache-Control": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache, no-store, must-revalidate, pre-check=0, post-check=0, max-age=0, s-maxage=0"
+                }
+              },
+              "Expires": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "0"
+                }
+              },
+              "Content-Length": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "1345"
+                }
+              },
+              "X-Arango-Queue-Time-Seconds": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "0.000000"
+                }
+              },
+              "Connection": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "Close"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/{Protocol}:/{Host}:{Port}/_db/{Db}/{Path}/dataset/qual/": {
+      "get": {
+        "summary": "Summary",
+        "description": "Use this service to get dataset summary data.\n\nThis service can be used to retrieve summary data for the dataset querying the dataset's data records.\n\nThe service expects the dataset primary key, `key`, as a query path parameter. If the dataset is matched, the service will return the summary of all data belonging to the dataset for the following fields:\n\n- `count`: Number of data records.\n- `std_date_start`: Date range start.\n- `std_date_end`: Date range end.\n- `_subject`: List of `_subject` categories featured in the data descriptors.\n- `_subject`: List of `_subject` categories featured in the data descriptors.\n- `_classes`: List of `_class` categories featured in the data descriptors.\n- `_domain`: List of `_subject` categories featured in the data descriptors.\n- `_tag`: List of `_tag` categories featured in the data descriptors.\n- `species_list`: List of featured scientific names featured in data.\n- `std_terms`: List of descriptors featured in data.\n- `std_terms_quant`: List of quantitative descriptors featured in data.\n\n*This service will dynamically query the data records belonging to the dataset, none of the corresponding fields stored in the dataset record will be returned.* Use this service to get up to date data statistics.\n\nThe service will return:\n\n- `200`: If *successful*, the service will return the full dataset record matching the search criteria.\n- `500`: *Any error*.",
+        "operationId": "aab0688f-c99e-4957-9edd-28d7f89b5a37",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "8194f5d7-b446-4dbc-b218-98fd2cb61091",
+              "description": ""
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Use this service to get dataset summary data.\n\nThis service can be used to retrieve summary data for the dataset querying the dataset's data records.\n\nThe service expects the dataset primary key, `key`, as a query path parameter. If the dataset is matched, the service will return the summary of all data belonging to the dataset for the following fields:\n\n- `count`: Number of data records.\n- `std_date_start`: Date range start.\n- `std_date_end`: Date range end.\n- `_subject`: List of `_subject` categories featured in the data descriptors.\n- `_subject`: List of `_subject` categories featured in the data descriptors.\n- `_classes`: List of `_class` categories featured in the data descriptors.\n- `_domain`: List of `_subject` categories featured in the data descriptors.\n- `_tag`: List of `_tag` categories featured in the data descriptors.\n- `species_list`: List of featured scientific names featured in data.\n- `std_terms`: List of descriptors featured in data.\n- `std_terms_quant`: List of quantitative descriptors featured in data.\n\n*This service will dynamically query the data records belonging to the dataset, none of the corresponding fields stored in the dataset record will be returned.* Use this service to get up to date data statistics.\n\nThe service will return:\n\n- `200`: If *successful*, the service will return the full dataset record matching the search criteria.\n- `500`: *Any error*.",
+          "content": {
+            "text/plain": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer",
+                      "format": "int64",
+                      "example": 43
+                    },
+                    "std_date_start": {
+                      "type": "string",
+                      "example": "2021"
+                    },
+                    "std_date_end": {
+                      "type": "string",
+                      "example": "2021"
+                    },
+                    "_subjects": {
+                      "type": "string",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "chr_subject_stand"
+                      ]
+                    },
+                    "_classes": {
+                      "type": "string",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "_class_category",
+                        "_class_identifier",
+                        "_class_quantity",
+                        "_class_time"
+                      ]
+                    },
+                    "_domain": {
+                      "type": "string",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "chr_gent"
+                      ]
+                    },
+                    "_tag": {
+                      "type": "string",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "chr_tag_distinct-pop",
+                        "chr_tag_diversity",
+                        "chr_tag_vulnerability"
+                      ]
+                    },
+                    "species_list": {
+                      "type": "string",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Abies alba",
+                        "Pinus halepensis",
+                        "Pinus pinaster"
+                      ]
+                    },
+                    "std_terms": {
+                      "type": "string",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "chr_Divergence",
+                        "chr_ExpHet",
+                        "chr_GenLoad",
+                        "chr_GenomicOffset",
+                        "chr_Inbreeding",
+                        "chr_PropClones",
+                        "chr_SampleSize",
+                        "chr_SizeClones",
+                        "gcu_id_number",
+                        "species",
+                        "std_date"
+                      ]
+                    },
+                    "std_terms_quant": {
+                      "type": "string",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "chr_Divergence",
+                        "chr_ExpHet",
+                        "chr_GenLoad",
+                        "chr_GenomicOffset",
+                        "chr_Inbreeding",
+                        "chr_PropClones",
+                        "chr_SampleSize",
+                        "chr_SizeClones"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Pragma": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "nosniff"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "frame-ancestors 'self'; form-action 'self';"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "max-age=31536000 ; includeSubDomains"
+                }
+              },
+              "Server": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "ArangoDB"
+                }
+              },
+              "Content-Type": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "application/json; charset=utf-8"
+                }
+              },
+              "Cache-Control": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache, no-store, must-revalidate, pre-check=0, post-check=0, max-age=0, s-maxage=0"
+                }
+              },
+              "Expires": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "0"
+                }
+              },
+              "Content-Length": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "675"
+                }
+              },
+              "X-Arango-Queue-Time-Seconds": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "0.000000"
+                }
+              },
+              "Connection": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "Close"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/{Protocol}:/{Host}:{Port}/_db/{Db}/{Path}/dataset/update/": {
+      "put": {
+        "summary": "Update",
+        "description": "Use this service to update the dataset statistics.\n\nThis service can be used to update the dataset statistics related to its selection of data records.\n\nThe service expects a list of dataset primary keys in the request body, the service will update the statistics fields for all matched datasets.\n\nThis service will dynamically query the data records belonging to the dataset. See the Summary service for the list of involved descriptors.\n\nThe service will return:\n\n200: If successful, the service will return the matched full dataset records.\n500: Any error.",
+        "operationId": "8f6914ab-aad8-4565-ba11-fd0294bbe4fe",
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "application/json; charset=utf-8",
+              "description": ""
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Use this service to update the dataset statistics.\n\nThis service can be used to update the dataset statistics related to its selection of data records.\n\nThe service expects a list of dataset primary keys in the request body, the service will update the statistics fields for all matched datasets.\n\nThis service will dynamically query the data records belonging to the dataset. See the Summary service for the list of involved descriptors.\n\nThe service will return:\n\n200: If successful, the service will return the matched full dataset records.\n500: Any error.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_description": {
+                        "type": "object",
+                        "properties": {
+                          "iso_639_3_eng": {
+                            "type": "string",
+                            "example": "Genetic indices for 3 species calculated from SPET genotype data (Abies alba, Pinus halepensis) and 4TREE Axiom assay (Thermo Fisher Scientific, USA, Pinus pinaster), calculated in December 2021 and submitted as FORGENIUS deliverable D4.3. Various programmes were used to calculate the indices: GenePop v. 4.7.5, BayeScan v. 2.1, and methods described in Archambeau (2022), PhD thesis, and González-Martínez et al. (2017), Current Biology."
+                          }
+                        }
+                      },
+                      "_key": {
+                        "type": "string",
+                        "example": "8194f5d7-b446-4dbc-b218-98fd2cb61091"
+                      },
+                      "_subject": {
+                        "type": "string",
+                        "example": "chr_subject_stand"
+                      },
+                      "_title": {
+                        "type": "object",
+                        "properties": {
+                          "iso_639_3_eng": {
+                            "type": "string",
+                            "example": "Genetic indices for FORGENIUS D4.3"
+                          }
+                        }
+                      },
+                      "std_dataset": {
+                        "type": "string",
+                        "example": "FORGENIUS_WP4_2022"
+                      },
+                      "std_dataset_markers": {
+                        "type": "object",
+                        "items": {
+                          "type": "object"
+                        }
+                      },
+                      "std_date_submission": {
+                        "type": "string",
+                        "example": "20231013"
+                      },
+                      "std_project": {
+                        "type": "string",
+                        "example": "FORGENIUS"
+                      },
+                      "std_terms_key": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "species",
+                          "gcu_id_number",
+                          "std_date"
+                        ]
+                      },
+                      "std_terms_summary": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "species"
+                        ]
+                      },
+                      "std_terms": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "chr_Divergence",
+                          "chr_ExpHet",
+                          "chr_GenLoad",
+                          "chr_GenomicOffset",
+                          "chr_Inbreeding",
+                          "chr_PropClones",
+                          "chr_SampleSize",
+                          "chr_SizeClones",
+                          "gcu_id_number",
+                          "species",
+                          "std_date"
+                        ]
+                      },
+                      "std_terms_quant": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "chr_Divergence",
+                          "chr_ExpHet",
+                          "chr_GenLoad",
+                          "chr_GenomicOffset",
+                          "chr_Inbreeding",
+                          "chr_PropClones",
+                          "chr_SampleSize",
+                          "chr_SizeClones"
+                        ]
+                      },
+                      "_tag": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "chr_tag_distinct-pop",
+                          "chr_tag_diversity",
+                          "chr_tag_vulnerability"
+                        ]
+                      },
+                      "_domain": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "chr_gent"
+                        ]
+                      },
+                      "_classes": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "_class_category",
+                          "_class_identifier",
+                          "_class_quantity",
+                          "_class_time"
+                        ]
+                      },
+                      "species_list": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "Abies alba",
+                          "Pinus halepensis",
+                          "Pinus pinaster"
+                        ]
+                      },
+                      "_subjects": {
+                        "type": "string",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "chr_subject_stand"
+                        ]
+                      },
+                      "std_date_end": {
+                        "type": "string",
+                        "example": "2021"
+                      },
+                      "std_date_start": {
+                        "type": "string",
+                        "example": "2021"
+                      },
+                      "count": {
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 43
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Pragma": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "nosniff"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "frame-ancestors 'self'; form-action 'self';"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "max-age=31536000 ; includeSubDomains"
+                }
+              },
+              "Server": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "ArangoDB"
+                }
+              },
+              "Content-Type": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "application/json; charset=utf-8"
+                }
+              },
+              "Cache-Control": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache, no-store, must-revalidate, pre-check=0, post-check=0, max-age=0, s-maxage=0"
+                }
+              },
+              "Expires": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "0"
+                }
+              },
+              "Content-Length": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "6106"
+                }
+              },
+              "X-Arango-Queue-Time-Seconds": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "0.000000"
+                }
+              },
+              "Connection": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "Close"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/{Protocol}:/{Host}:{Port}/_db/{Db}/{Path}/data/": {
+      "get": {
+        "summary": "Scan",
+        "description": "Use this service to retrieve data from a dataset.\n\nThis service can be used to paginate through all data belonging to a specific dataset.\n\nThe service expects the dataset primary key, `dataset`, the query starty element, `start`, and the number of records to return, `limit`, as a query path parameters.\n\nThe service can be used to iterate a dataset's data using paging; the data is returned in an undefined order.\n\nThe service will return:\n\n200: If successful, the service will return the data page.\n500: Any error.",
+        "operationId": "64b4b764-4fc7-4a8c-b221-1fc5dc547ae5",
+        "parameters": [
+          {
+            "name": "dataset",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "8194f5d7-b446-4dbc-b218-98fd2cb61091",
+              "description": ""
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "25",
+              "description": ""
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "0",
+              "description": ""
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Use this service to retrieve data from a dataset.\n\nThis service can be used to paginate through all data belonging to a specific dataset.\n\nThe service expects the dataset primary key, `dataset`, the query starty element, `start`, and the number of records to return, `limit`, as a query path parameters.\n\nThe service can be used to iterate a dataset's data using paging; the data is returned in an undefined order.\n\nThe service will return:\n\n200: If successful, the service will return the data page.\n500: Any error.",
+          "content": {
+            "text/plain": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "chr_SampleSize": {
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 17
+                      },
+                      "gcu_id_number": {
+                        "type": "string",
+                        "example": "ESP0089"
+                      },
+                      "species": {
+                        "type": "string",
+                        "example": "Pinus pinaster"
+                      },
+                      "std_date": {
+                        "type": "string",
+                        "example": "2021"
+                      },
+                      "chr_GenomicOffset_marker": {
+                        "type": "object",
+                        "properties": {
+                          "chr_GenomicOffset": {
+                            "type": "number"
+                          },
+                          "chr_MarkerType": {
+                            "type": "string",
+                            "example": "SNP-chip"
+                          },
+                          "chr_NumberOfLoci": {
+                            "type": "integer",
+                            "format": "int64",
+                            "example": 10185
+                          },
+                          "chr_GenoTech": {
+                            "type": "string",
+                            "example": "Only SNPs with high-quality scoring following the Best Practices Workflow implemented in the Axiom™ Analysis Suite v5.2 were selected and filtered by missing data (<30%). Alculated following Archambeau (2022), PhD thesis."
+                          }
+                        }
+                      },
+                      "chr_SizeClones_marker": {
+                        "type": "object",
+                        "properties": {
+                          "chr_SizeClones": {
+                            "type": "integer",
+                            "format": "int64",
+                            "example": 0
+                          },
+                          "chr_MarkerType": {
+                            "type": "string",
+                            "example": "SNP-chip"
+                          },
+                          "chr_NumberOfLoci": {
+                            "type": "integer",
+                            "format": "int64",
+                            "example": 10185
+                          },
+                          "chr_GenoTech": {
+                            "type": "string",
+                            "example": "Only SNPs with high-quality scoring following the Best Practices Workflow implemented in the Axiom™ Analysis Suite v5.2 were selected and filtered by missing data (<30%)."
+                          }
+                        }
+                      },
+                      "chr_Inbreeding_marker": {
+                        "type": "object",
+                        "properties": {
+                          "chr_Inbreeding": {
+                            "type": "number"
+                          },
+                          "chr_MarkerType": {
+                            "type": "string",
+                            "example": "SNP-chip"
+                          },
+                          "chr_NumberOfLoci": {
+                            "type": "integer",
+                            "format": "int64",
+                            "example": 10185
+                          },
+                          "chr_GenoTech": {
+                            "type": "string",
+                            "example": "Only SNPs with high-quality scoring following the Best Practices Workflow implemented in the Axiom™ Analysis Suite v5.2 were selected and filtered by missing data (<30%). Index estimated with GenePop v. 4.7.5 ."
+                          }
+                        }
+                      },
+                      "chr_GenLoad_marker": {
+                        "type": "object",
+                        "properties": {
+                          "chr_GenLoad": {
+                            "type": "number"
+                          },
+                          "chr_MarkerType": {
+                            "type": "string",
+                            "example": "SNP-chip"
+                          },
+                          "chr_NumberOfLoci": {
+                            "type": "integer",
+                            "format": "int64",
+                            "example": 1325
+                          },
+                          "chr_GenoTech": {
+                            "type": "string",
+                            "example": "Only SNPs with high-quality scoring following the Best Practices Workflow implemented in the Axiom™ Analysis Suite v5.2 were selected and filtered by missing data (<30%). SNP annotation based on SnpEff v5.1 was retrieved from Piñeiro et al. (2023)."
+                          }
+                        }
+                      },
+                      "chr_PropClones_marker": {
+                        "type": "object",
+                        "properties": {
+                          "chr_PropClones": {
+                            "type": "integer",
+                            "format": "int64",
+                            "example": 0
+                          },
+                          "chr_MarkerType": {
+                            "type": "string",
+                            "example": "SNP-chip"
+                          },
+                          "chr_NumberOfLoci": {
+                            "type": "integer",
+                            "format": "int64",
+                            "example": 10185
+                          },
+                          "chr_GenoTech": {
+                            "type": "string",
+                            "example": "Only SNPs with high-quality scoring following the Best Practices Workflow implemented in the Axiom™ Analysis Suite v5.2 were selected and filtered by missing data (<30%)."
+                          }
+                        }
+                      },
+                      "chr_ExpHet_marker": {
+                        "type": "object",
+                        "properties": {
+                          "chr_ExpHet": {
+                            "type": "number"
+                          },
+                          "chr_MarkerType": {
+                            "type": "string",
+                            "example": "SNP-chip"
+                          },
+                          "chr_NumberOfLoci": {
+                            "type": "integer",
+                            "format": "int64",
+                            "example": 10185
+                          },
+                          "chr_GenoTech": {
+                            "type": "string",
+                            "example": "Only SNPs with high-quality scoring following the Best Practices Workflow implemented in the Axiom™ Analysis Suite v5.2 were selected and filtered by missing data (<30%).  Index estimated with GenePop v. 4.7.5 ."
+                          }
+                        }
+                      },
+                      "chr_Divergence_marker": {
+                        "type": "object",
+                        "properties": {
+                          "chr_Divergence": {
+                            "type": "number"
+                          },
+                          "chr_MarkerType": {
+                            "type": "string",
+                            "example": "SNP-chip"
+                          },
+                          "chr_NumberOfLoci": {
+                            "type": "integer",
+                            "format": "int64",
+                            "example": 10185
+                          },
+                          "chr_GenoTech": {
+                            "type": "string",
+                            "example": "Only SNPs with high-quality scoring following the Best Practices Workflow implemented in the Axiom™ Analysis Suite v5.2 were selected and filtered by missing data (<30%).  Index estimated with BayeScan v. 2.1"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Pragma": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "nosniff"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "frame-ancestors 'self'; form-action 'self';"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "max-age=31536000 ; includeSubDomains"
+                }
+              },
+              "Server": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "ArangoDB"
+                }
+              },
+              "Content-Type": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "application/json; charset=utf-8"
+                }
+              },
+              "Cache-Control": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache, no-store, must-revalidate, pre-check=0, post-check=0, max-age=0, s-maxage=0"
+                }
+              },
+              "Expires": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "0"
+                }
+              },
+              "Content-Length": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "41911"
+                }
+              },
+              "X-Arango-Queue-Time-Seconds": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "0.000000"
+                }
+              },
+              "Connection": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "Close"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/{Protocol}:/{Host}:{Port}/_db/{Db}/{Path}/data/stat/": {
+      "get": {
+        "summary": "Summary",
+        "description": "Use this service to get summary data.\n\nThis service can be used to retrieve summary data for a specific descriptor belonging to a specific dataset.\n\nThe service expects the dataset primary key, `dataset`, the statistical function, `stat`, and the descriptor global identifier, `summary`, as a query path parameters.\n\nThe available statistical functions, provided in `stat`, are:\n\n- `MIN`: minimum.\n- `MAX`: maximum.\n- `AVG`: average.\n- `MEDIAN`: median.\n- `STDDEV`: standard deviation.\n- `VARIANCE`: variance.\n\nThe descriptor provided in `summary` must be part of the dataset list of summary fields, `std_terms_summary`, if that is not the case the service will return an error.\n\nIf successful, [`200`], the service will return one record for each distinct value of the descriptor provided in `summary` containing all quantitative data values summarised according to the function selected in `stat`.\n\nIf unsuccessful, the service will return:\n\n- `400`: Descriptor not a summary field.\n- `404`: Dataset not found.\n- `500`: *Any other error*.",
+        "operationId": "03c819c7-6e64-4941-88d0-f95d810dbb3b",
+        "parameters": [
+          {
+            "name": "dataset",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "8194f5d7-b446-4dbc-b218-98fd2cb61097",
+              "description": ""
+            }
+          },
+          {
+            "name": "stat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "MAX",
+              "description": ""
+            }
+          },
+          {
+            "name": "summary",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "gcu_id_number",
+              "description": ""
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Use this service to get summary data.\n\nThis service can be used to retrieve summary data for a specific descriptor belonging to a specific dataset.\n\nThe service expects the dataset primary key, `dataset`, the statistical function, `stat`, and the descriptor global identifier, `summary`, as a query path parameters.\n\nThe available statistical functions, provided in `stat`, are:\n\n- `MIN`: minimum.\n- `MAX`: maximum.\n- `AVG`: average.\n- `MEDIAN`: median.\n- `STDDEV`: standard deviation.\n- `VARIANCE`: variance.\n\nThe descriptor provided in `summary` must be part of the dataset list of summary fields, `std_terms_summary`, if that is not the case the service will return an error.\n\nIf successful, [`200`], the service will return one record for each distinct value of the descriptor provided in `summary` containing all quantitative data values summarised according to the function selected in `stat`.\n\nIf unsuccessful, the service will return:\n\n- `400`: Descriptor not a summary field.\n- `404`: Dataset not found.\n- `500`: *Any other error*.",
+          "content": {
+            "text/plain": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "gcu_id_number": {
+                        "type": "string",
+                        "example": "AUPO51"
+                      },
+                      "chr_WoodDensity": {
+                        "type": "number"
+                      },
+                      "chr_SpecLeafArea": {
+                        "type": "number"
+                      },
+                      "chr_Gres": {
+                        "type": "number"
+                      },
+                      "chr_TurgorLossPoint": {
+                        "type": "number"
+                      },
+                      "chr_P50": {
+                        "type": "number"
+                      },
+                      "chr_HuberValue": {
+                        "type": "number"
+                      },
+                      "chr_Cbranch": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Pragma": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "nosniff"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "frame-ancestors 'self'; form-action 'self';"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "max-age=31536000 ; includeSubDomains"
+                }
+              },
+              "Server": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "ArangoDB"
+                }
+              },
+              "Content-Type": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "application/json; charset=utf-8"
+                }
+              },
+              "Cache-Control": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache, no-store, must-revalidate, pre-check=0, post-check=0, max-age=0, s-maxage=0"
+                }
+              },
+              "Expires": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "0"
+                }
+              },
+              "Content-Length": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "12244"
+                }
+              },
+              "X-Arango-Queue-Time-Seconds": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "0.000000"
+                }
+              },
+              "Connection": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "Close"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/{Protocol}:/{Host}:{Port}/_db/{Db}/{Path}/data/query/": {
+      "post": {
+        "summary": "Query",
+        "description": "Use this service to query data records.\n\nThis service can be used to query data records belonging to a specific dataset using a selection criteria.\n\nThe service expects the dataset primary key, `dataset`, the chaining operator for query filters, `op`, the results start index, `start`, and the number of records to return, `limit`, as a query path parameters.\n\nThe chaining operator in `op` can be either `AND` to ensure all criteria is matched, or `OR` to match at least one criteria.\n\nThe selection criteria is provided in the request body::\n\n- `gcu_id_number`: GCU identifier, provide a wildcard search string. The supported wildcards are `_` to match a single arbitrary character, and `%` to match any number of arbitrary characters. Literal `%` and `_` need to be escaped with a backslash. Backslashes need to be escaped themselves.\n- `std_date`: Provide the start and end dates to select data belonging to that time period. Note that the date range will be applied to the `std_date` property in data records.\n- `species`: Provide a list of space delimited tokens to search scientific names.\n- `chr_tree_code`: Provide a list of matching tree codes.\n\nTo ignore a selection criteria just omit the top level property.\n\nIf successful, [`200`], the service will return the page of records matching the selection criteria.\n\nIf unsuccessful, the service will return:\n\n- `500`: *Any other error*.",
+        "operationId": "4f359b41-eb91-4deb-8dab-4828b19bd24e",
+        "parameters": [
+          {
+            "name": "dataset",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "291ea3ef-8fbc-409b-a1c1-9a898eb1af3a",
+              "description": ""
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "25",
+              "description": ""
+            }
+          },
+          {
+            "name": "op",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "AND",
+              "description": ""
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "0",
+              "description": ""
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "text/plain; charset=utf-8",
+              "description": ""
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Use this service to query data records.\n\nThis service can be used to query data records belonging to a specific dataset using a selection criteria.\n\nThe service expects the dataset primary key, `dataset`, the chaining operator for query filters, `op`, the results start index, `start`, and the number of records to return, `limit`, as a query path parameters.\n\nThe chaining operator in `op` can be either `AND` to ensure all criteria is matched, or `OR` to match at least one criteria.\n\nThe selection criteria is provided in the request body::\n\n- `gcu_id_number`: GCU identifier, provide a wildcard search string. The supported wildcards are `_` to match a single arbitrary character, and `%` to match any number of arbitrary characters. Literal `%` and `_` need to be escaped with a backslash. Backslashes need to be escaped themselves.\n- `std_date`: Provide the start and end dates to select data belonging to that time period. Note that the date range will be applied to the `std_date` property in data records.\n- `species`: Provide a list of space delimited tokens to search scientific names.\n- `chr_tree_code`: Provide a list of matching tree codes.\n\nTo ignore a selection criteria just omit the top level property.\n\nIf successful, [`200`], the service will return the page of records matching the selection criteria.\n\nIf unsuccessful, the service will return:\n\n- `500`: *Any other error*.",
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "example": "{\n  \"gcu_id_number\": \"ESP00179\",\n  \"std_date\": {\n    \"std_date_start\": \"2022\",\n    \"std_date_end\": \"20221231\"\n  },\n  \"species\": \"sylvatica\",\n  \"chr_tree_code\": [\n    \"ESP00179-007\"\n  ]\n}"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "chr_Dsoil": {
+                        "type": "number"
+                      },
+                      "chr_ForestComposition": {
+                        "type": "string",
+                        "example": "chr_ForestComposition_1"
+                      },
+                      "chr_ForestStructure": {
+                        "type": "string",
+                        "example": "chr_ForestStructure_1"
+                      },
+                      "chr_MicroTopography": {
+                        "type": "string",
+                        "example": "chr_MicroTopography_1"
+                      },
+                      "chr_measured_Aspect": {
+                        "type": "number"
+                      },
+                      "chr_measured_Elevation": {
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1590
+                      },
+                      "chr_measured_LatPlot": {
+                        "type": "number"
+                      },
+                      "chr_measured_LonPlot": {
+                        "type": "number"
+                      },
+                      "chr_measured_Slope": {
+                        "type": "number"
+                      },
+                      "chr_tree_code": {
+                        "type": "string",
+                        "example": "ESP00179-007"
+                      },
+                      "gcu_id_number": {
+                        "type": "string",
+                        "example": "ESP00179"
+                      },
+                      "geometry": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "example": "Point"
+                          },
+                          "coordinates": {
+                            "type": "number",
+                            "items": {
+                              "type": "number"
+                            }
+                          }
+                        }
+                      },
+                      "soil_method": {
+                        "type": "string",
+                        "example": "chr_SoilMethod_auger"
+                      },
+                      "species": {
+                        "type": "string",
+                        "example": "Fagus sylvatica"
+                      },
+                      "std_date": {
+                        "type": "string",
+                        "example": "20220706"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Pragma": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "nosniff"
+                }
+              },
+              "Content-Security-Policy": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "frame-ancestors 'self'; form-action 'self';"
+                }
+              },
+              "Strict-Transport-Security": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "max-age=31536000 ; includeSubDomains"
+                }
+              },
+              "Server": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "ArangoDB"
+                }
+              },
+              "Content-Type": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "application/json; charset=utf-8"
+                }
+              },
+              "Cache-Control": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "no-cache, no-store, must-revalidate, pre-check=0, post-check=0, max-age=0, s-maxage=0"
+                }
+              },
+              "Expires": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "0"
+                }
+              },
+              "Content-Length": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "520"
+                }
+              },
+              "X-Arango-Queue-Time-Seconds": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "0.000000"
+                }
+              },
+              "Connection": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "Close"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {}
+}
