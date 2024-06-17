@@ -182,3 +182,11 @@ The service will return:
 Copyright (c) 2023 Milko Skofic
 
 License: Apache 2
+
+```mermaid
+pie title Pie chart 1
+    "Category A" : 0.5
+    "Category B" : 0.2
+    "Category C" : 0.3
+```
+
