@@ -46,6 +46,7 @@ const ModelDescription = dd`
 	- \`count\`: Number of data records.
 	- \`std_date_start\`: Data date range start.
 	- \`std_date_edd\`: Data date range end.
+	- \`_subject\`: Subject of dataset.
 	- \`_subjects\`: List of subjects featured in data descriptors.
 	- \`_classes\`: List of classes featured in data descriptors.
 	- \`_domain\`: List of domains featured in data descriptors.
@@ -61,7 +62,8 @@ const ModelQueryDescription = dd`
 	- \`std_date\`: Data date range, provide search values for start and end dates.
 	- \`std_date_submission\`: Dataset submission date range, provide start and end dates.
 	- \`count\`: Provide data records count range.
-	- \`_subjects\`: Provide list of matching subjects.
+	- \`_subject\`: Provide list of matching dataset subjects.
+	- \`_subjects\`: Provide list of matching data subjects.
 	- \`_classes\`: Provide list of matching classes.
 	- \`_domain\`: Provide list of matching domains.
 	- \`_tag\`: Provide list of dataset tags with all or any selector.
@@ -581,6 +583,7 @@ function datasetQueryFilters(request, response)
 		switch(key) {
 			case '_key':
 			case 'std_project':
+			case '_subject':
 			case '_subjects':
 				filter = queryFilters.filterList(key, value)
 				break

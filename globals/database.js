@@ -34,25 +34,25 @@ const globals = {
 						],
 						"fields": {
 							"std_date": {},
-							"species": {
-								"analyzers": [
-									"text_en",
-									"identity"
-								]
-							},
-							"geometry": {
-								"analyzers": [
-									"geojson"
-								]
-							},
-							"chr_tree_code": {},
+							"std_dataset_id": {},
 							"gcu_id_number": {
 								"analyzers": [
 									"text_en",
 									"identity"
 								]
 							},
-							"std_dataset_id": {}
+							"chr_tree_code": {},
+							"geometry": {
+								"analyzers": [
+									"geojson"
+								]
+							},
+							"species": {
+								"analyzers": [
+									"text_en",
+									"identity"
+								]
+							}
 						},
 						"includeAllFields": false,
 						"storeValues": "id",
@@ -71,6 +71,20 @@ const globals = {
 							"identity"
 						],
 						"fields": {
+							"_key": {},
+							"std_project": {},
+							"std_dataset": {},
+							"std_dataset_group": {},
+							"std_date_end": {},
+							"std_date_start": {},
+							"std_date_submission": {},
+							"count": {},
+							"_collection": {},
+							"_subject": {},
+							"_subjects": {},
+							"_classes": {},
+							"_domain": {},
+							"_tag": {},
 							"_title": {
 								"fields": {
 									"iso_639_3_eng": {
@@ -81,19 +95,7 @@ const globals = {
 									}
 								}
 							},
-							"std_date_start": {},
-							"_tag": {},
-							"std_date_submission": {},
-							"subjects": {},
-							"count": {},
-							"std_terms_quant": {},
-							"std_dataset": {},
-							"std_dataset_group": {},
-							"_subjects": {},
-							"_key": {},
-							"_collection": {},
-							"_classes": {},
-							"_citation": {
+							"_description": {
 								"fields": {
 									"iso_639_3_eng": {
 										"analyzers": [
@@ -103,13 +105,7 @@ const globals = {
 									}
 								}
 							},
-							"std_date_end": {},
-							"std_terms_key": {},
-							"std_terms_summary": {},
-							"_subject": {},
-							"std_date": {},
-							"_domain": {},
-							"_description": {
+							"_citation": {
 								"fields": {
 									"iso_639_3_eng": {
 										"analyzers": [
@@ -126,7 +122,9 @@ const globals = {
 								]
 							},
 							"std_terms": {},
-							"std_project": {}
+							"std_terms_key": {},
+							"std_terms_quant": {},
+							"std_terms_summary": {}
 						},
 						"includeAllFields": false,
 						"storeValues": "id",

@@ -80,6 +80,9 @@ class MyRequestController {
                 ],
                 "doAll": false
             ],
+            "_subject": [
+                "chr_subject_stand"
+            ],
             "_subjects": [
                 "chr_subject_stand"
             ],

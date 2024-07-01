@@ -40,6 +40,9 @@ module.exports = {
 		})
 			.or('min','max')
 			.description("Select by data records range"),
+		_subject: joi.array()
+			.items(joi.string())
+			.description("Select by dataset subject"),
 		_subjects: joi.array()
 			.items(joi.string())
 			.description("Select by dataset subject"),

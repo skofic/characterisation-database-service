@@ -36,7 +36,10 @@ module.exports = {
 			.description("Number of data records in dataset"),
 		_subject: joi.string()
 			.required()
-			.description("Data subject"),
+			.description("Dataset subject"),
+		_subjects: joi.array()
+			.items(joi.string())
+			.description("List of subjects featured in data record descriptors"),
 		_classes: joi.array()
 			.items(joi.string())
 			.description("List of classes featured in data record descriptors"),
@@ -65,9 +68,6 @@ module.exports = {
 		std_terms_summary: joi.array()
 			.items(joi.string())
 			.description("Dataset summary fields"),
-		_subjects: joi.array()
-			.items(joi.string())
-			.description("List of subjects featured in data record descriptors"),
 		species_list: joi.array()
 			.items(joi.string())
 			.description("List of species featured in data"),
