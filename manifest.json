@@ -19,11 +19,16 @@
 	"$schema": "http://json.schemastore.org/foxx-manifest",
 
     "configuration": {
-        "data_coll_name": {
-            "description": "Data collection name.",
-            "default": "data",
-            "type": "string"
-        },
+		"term_view_name": {
+			"description": "Terms view name.",
+			"default": "VIEW_TERM",
+			"type": "string"
+		},
+		"data_coll_name": {
+			"description": "Data collection name.",
+			"default": "data",
+			"type": "string"
+		},
 		"data_view_name": {
 			"description": "Data view name.",
 			"default": "VIEW_DATA",

@@ -88,11 +88,26 @@ const QueryParameters = [
 	'chr_tree_code'
 ]
 
-///
-// Collections and views.
-///
+//
+// Collections & views.
+//
+const collection_data = db._collection(database.globals.collections.data.name)
 const collection_dataset = db._collection(database.globals.collections.dataset.name)
-//const collection_dataset = db._collection(database.documentCollections.dataset)
+const view_term = db._view(module.context.configuration.term_view_name)
+const view_data = db._view(database.globals.views.data_view.name)
+const view_dataset = db._view(database.globals.views.dataset_view.name)
+const view_term_reference = {
+	isArangoCollection: true,
+	name: () => view_term.name()
+}
+const view_data_reference = {
+	isArangoCollection: true,
+	name: () => view_data.name()
+}
+const view_dataset_reference = {
+	isArangoCollection: true,
+	name: () => view_dataset.name()
+}
 
 
 ///
@@ -236,14 +251,14 @@ function datasetData(request, response)
 	// Determine dataset type.
 	///
 	const query = aql`
-		FOR set IN VIEW_DATASET
+		FOR set IN ${view_dataset_reference}
 		    SEARCH set._key == ${dset}
 		    
 		    LET markers = HAS(set, 'std_dataset_markers')
 		                ? set.std_dataset_markers
 		                : []
 		
-		    FOR dat IN VIEW_DATA
+		    FOR dat IN ${view_data_reference}
 		        SEARCH dat.std_dataset_id == set._key
 		        LIMIT ${start}, ${limit}
 		
@@ -375,14 +390,14 @@ function searchData(request, response)
 	// Build filters block.
 	///
 	const query = aql`
-		FOR set IN VIEW_DATASET
+		FOR set IN ${view_dataset_reference}
 		    SEARCH set._key == ${dataset}
 		    
 		    LET markers = HAS(set, 'std_dataset_markers')
 		                ? set.std_dataset_markers
 		                : []
 		
-		    FOR dat IN VIEW_DATA
+		    FOR dat IN ${view_data_reference}
 		        SEARCH dat.std_dataset_id == set._key AND
 				       ( ${aql.join(filters, ` ${op} `)} )
 		        LIMIT ${start}, ${limit}
@@ -482,7 +497,7 @@ function datasetDataSummary(
 	// Make summary.
 	///
 	const query = aql`
-	    FOR dat IN VIEW_DATA
+	    FOR dat IN ${view_data_reference}
 	        SEARCH dat.std_dataset_id == ${theDataset._key}
 
 	        COLLECT summary = dat[${theField}]
@@ -565,7 +580,7 @@ function datasetGeneticSummary(
 	///
 	const query = aql`
 	    LET items = (
-	        FOR dat IN VIEW_DATA
+	        FOR dat IN ${view_data_reference}
 	            SEARCH dat.std_dataset_id == ${theDataset._key}
 	            COLLECT species = dat.species
 	            INTO groups

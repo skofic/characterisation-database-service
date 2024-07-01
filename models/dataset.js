@@ -21,19 +21,31 @@ module.exports = {
 		std_dataset: joi.string()
 			.required()
 			.description("The dataset's code or acronym"),
+		std_date_start: joi.string()
+			.regex(/^[0-9]{4, 8}$/)
+			.description("Data date dange start"),
+		std_date_end: joi.string()
+			.regex(/^[0-9]{4, 8}$/)
+			.description("Data date dange end"),
 		std_date_submission: joi.string()
 			.required()
 			.regex(/^[0-9]{4,8}$/)
 			.description("Dataset submission date"),
-		std_terms_key: joi.array()
-			.items(joi.string())
-			.description("Dataset key fields"),
-		std_terms_summary: joi.array()
-			.items(joi.string())
-			.description("Dataset summary fields"),
+		count: joi.number()
+			.integer()
+			.description("Number of data records in dataset"),
 		_subject: joi.string()
 			.required()
 			.description("Data subject"),
+		_classes: joi.array()
+			.items(joi.string())
+			.description("List of classes featured in data record descriptors"),
+		_domain: joi.array()
+			.items(joi.string())
+			.description("List of domains featured in data record descriptors"),
+		_tag: joi.array()
+			.items(joi.string())
+			.description("List of tags featured in data record descriptors"),
 		_title: joi.object({
 			iso_639_3_eng: joi.string().required()
 		})
@@ -47,27 +59,15 @@ module.exports = {
 		_citation: joi.array()
 			.items(joi.string())
 			.description("Required citations"),
-		count: joi.number()
-			.integer()
-			.description("Number of data records in dataset"),
-		std_date_start: joi.string()
-			.regex(/^[0-9]{4, 8}$/)
-			.description("Data date dange start"),
-		std_date_end: joi.string()
-			.regex(/^[0-9]{4, 8}$/)
-			.description("Data date dange end"),
+		std_terms_key: joi.array()
+			.items(joi.string())
+			.description("Dataset key fields"),
+		std_terms_summary: joi.array()
+			.items(joi.string())
+			.description("Dataset summary fields"),
 		_subjects: joi.array()
 			.items(joi.string())
 			.description("List of subjects featured in data record descriptors"),
-		_classes: joi.array()
-			.items(joi.string())
-			.description("List of classes featured in data record descriptors"),
-		_domain: joi.array()
-			.items(joi.string())
-			.description("List of domains featured in data record descriptors"),
-		_tag: joi.array()
-			.items(joi.string())
-			.description("List of tags featured in data record descriptors"),
 		species_list: joi.array()
 			.items(joi.string())
 			.description("List of species featured in data"),

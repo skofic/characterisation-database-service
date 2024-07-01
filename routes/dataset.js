@@ -35,7 +35,9 @@ const ModelDescription = dd`
 	- \`std_project\`: Dataset project code.
 	- \`std_dataset\`: Dataset code or acronym.
 	- \`std_date_submission\`: Dataset submission date.
+	- \`std_terms\`: List of variables featured in data.
 	- \`std_terms_key\`: List of key fields.
+	- \`std_terms_quant\`: List of quantitative variables featured in data.
 	- \`std_terms_summary\`: List of summary fields
 	- \`_subject\`: Dataset data subject.
 	- \`_title\`: Dataset title.
@@ -49,8 +51,6 @@ const ModelDescription = dd`
 	- \`_domain\`: List of domains featured in data descriptors.
 	- \`_tag\`: List of tags featured in data descriptors.
 	- \`species_list\`: List of species featured in data.
-	- \`std_terms\`: List of variables featured in data.
-	- \`std_terms_quant\`: List of quantitative variables featured in data.
 	- \`std_dataset_markers\`: List of species/markers combinations.`
 const ModelQuery = require('../models/datasetQuery')
 const ModelQueryDescription = dd`
@@ -60,19 +60,19 @@ const ModelQueryDescription = dd`
 	- \`std_dataset\`: Provide a wildcard search string for the dataset code.
 	- \`std_date\`: Data date range, provide search values for start and end dates.
 	- \`std_date_submission\`: Dataset submission date range, provide start and end dates.
-	- \`_title\`: Provide space delimited keywords to search dataset title.
-	- \`_description\`: Provide space delimited keywords to search dataset description.
-	- \`_citation\`: Provide space delimited keywords to search dataset citations.
-	- \`std_terms_key\`: Provide list of dataset key fields with all or any selector.
-	- \`std_terms_summary\`: Provide list of dataset summary fields with all or any selector.
 	- \`count\`: Provide data records count range.
-	- \`_subject\`: Provide list of matching subjects.
+	- \`_subjects\`: Provide list of matching subjects.
 	- \`_classes\`: Provide list of matching classes.
 	- \`_domain\`: Provide list of matching domains.
 	- \`_tag\`: Provide list of dataset tags with all or any selector.
+	- \`_title\`: Provide space delimited keywords to search dataset title.
+	- \`_description\`: Provide space delimited keywords to search dataset description.
+	- \`_citation\`: Provide space delimited keywords to search dataset citations.
 	- \`species_list\`: Provide space delimited keywords to search species.
 	- \`std_terms\`: Provide list of featured variables in the dataset with all or any selector.
+	- \`std_terms_key\`: Provide list of dataset key fields with all or any selector.
 	- \`std_terms_quant\`: Provide list of featured quantitative variables in the dataset with all or any selector.
+	- \`std_terms_summary\`: Provide list of dataset summary fields with all or any selector.
 	Omit the properties that you don't want to search on.`
 const ModelCategories = require('../models/datasetCategories')
 const ModelCategoriesDescription = dd`
@@ -80,7 +80,7 @@ const ModelCategoriesDescription = dd`
 	- \`count\`: Number of data records.
 	- \`std_date_start\`: Data start date.
 	- \`std_date_end\`: Data end date.
-	- \`_subject\`: List of subjects featured in data descriptors.
+	- \`_subjects\`: List of subjects featured in data descriptors.
 	- \`_classes\`: List of classes featured in data descriptors.
 	- \`_domain\`: List of domains featured in data descriptors.
 	- \`_tag\`: List of tags featured in data descriptors.
@@ -112,6 +112,27 @@ const keyListSchema = joi.array()
 // 	"std_terms",
 // 	"_title", "_description"
 // ]
+
+//
+// Collections.
+//
+const collection_data = db._collection(module.context.configuration.data_coll_name)
+const collection_dataset = db._collection(module.context.configuration.dataset_coll_name)
+const view_term = db._view(module.context.configuration.term_view_name)
+const view_data = db._view(module.context.configuration.data_view_name)
+const view_dataset = db._view(module.context.configuration.dataset_view_name)
+const view_term_reference = {
+	isArangoCollection: true,
+	name: () => view_term.name()
+}
+const view_data_reference = {
+	isArangoCollection: true,
+	name: () => view_data.name()
+}
+const view_dataset_reference = {
+	isArangoCollection: true,
+	name: () => view_dataset.name()
+}
 
 ///
 // Router.
@@ -261,7 +282,7 @@ function searchDatasetObjects(request, response)
 	// Build filters block.
 	///
 	const query = aql`
-		FOR dat IN VIEW_DATASET
+		FOR dat IN ${view_dataset_reference}
 			SEARCH ${aql.join(filters, ` ${op} `)}
 		RETURN dat
 	`
@@ -295,11 +316,11 @@ function getDatasetCategories(request, response)
 	// Build filters block.
 	///
 	const query = aql`
-		FOR dset IN VIEW_DATASET
+		FOR dset IN ${view_dataset_reference}
 		    SEARCH dset._key == ${key}
 		    
 		    LET data = (
-		        FOR dat IN VIEW_DATA
+		        FOR dat IN ${view_data_reference}
 		            SEARCH dat.std_dataset_id == dset._key
 		            COLLECT AGGREGATE items = COUNT(),
 		                              vars = UNIQUE(ATTRIBUTES(dat, true)),
@@ -316,15 +337,15 @@ function getDatasetCategories(request, response)
 		    )[0]
 		
 		    LET quantitative = (
-		        FOR doc IN terms
-		            FILTER doc._key IN data.std_terms
-		            FILTER doc._data._class IN ["_class_quantity", "_class_quantity_calculated", "_class_quantity_averaged"]
+		        FOR doc IN ${view_term_reference}
+		            SEARCH doc._key IN data.std_terms AND
+				           doc._data._class IN ["_class_quantity", "_class_quantity_calculated", "_class_quantity_averaged"]
 		        RETURN doc._key
 		    )
 		
 		    LET categories = (
-		        FOR doc IN terms
-		            FILTER doc._key IN data.std_terms
+		        FOR doc IN ${view_term_reference}
+		            SEARCH doc._key IN data.std_terms
 		            COLLECT AGGREGATE classes = UNIQUE(doc._data._class),
 		                              domains = UNIQUE(doc._data._domain),
 		                              tags = UNIQUE(doc._data._tag),
@@ -405,7 +426,7 @@ function updateDataset(request, response)
 	///
 	let query = aql`
 		LET records = (
-		    FOR dset IN VIEW_DATASET
+		    FOR dset IN ${view_dataset_reference}
 		        SEARCH dset._key IN ${keys}
 		    RETURN UNSET(
 		        dset,
@@ -422,7 +443,7 @@ function updateDataset(request, response)
 		
 		FOR record IN records
 		    LET data = (
-		        FOR dat IN VIEW_DATA
+		        FOR dat IN ${view_data_reference}
 		            SEARCH dat.std_dataset_id == record._key
 		            COLLECT AGGREGATE items = COUNT(),
 		                              vars = UNIQUE(ATTRIBUTES(dat, true)),
@@ -442,15 +463,15 @@ function updateDataset(request, response)
 		    )[0]
 		
 		    LET quantitative = (
-		        FOR doc IN terms
-		            FILTER doc._key IN data.std_terms
-		            FILTER doc._data._class IN ["_class_quantity", "_class_quantity_calculated", "_class_quantity_averaged"]
+		        FOR doc IN ${view_term_reference}
+		            SEARCH doc._key IN data.std_terms AND
+		                   doc._data._class IN ["_class_quantity", "_class_quantity_calculated", "_class_quantity_averaged"]
 		        RETURN doc._key
 		    )
 		    
 		    LET categories = (
-		        FOR doc IN terms
-		            FILTER doc._key IN data.std_terms
+		        FOR doc IN ${view_term_reference}
+		            SEARCH doc._key IN data.std_terms
 		            COLLECT AGGREGATE classes = UNIQUE(doc._data._class),
 		                              domains = UNIQUE(doc._data._domain),
 		                              tags = UNIQUE(doc._data._tag),
@@ -560,7 +581,7 @@ function datasetQueryFilters(request, response)
 		switch(key) {
 			case '_key':
 			case 'std_project':
-			case '_subject':
+			case '_subjects':
 				filter = queryFilters.filterList(key, value)
 				break
 

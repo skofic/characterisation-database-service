@@ -19,7 +19,7 @@
     "/{Protocol}:/{Host}:{Port}/_db/{Db}/{Path}/dataset/query/": {
       "post": {
         "summary": "Query",
-        "description": "Use this service to query datasets.\n\nThis service can be used to select datasets according to a set of criteria.\n\nThe service expects the chaining operator, `op`, as a query path parameter. `AND` indicates that the dataset will be selected if *all selection criteria* is satisfied, `OR` if *at least one* matches. It defaults to `AND`.\n\nThe selection criteria is provided in the request body:\n\n- `_key`: Match a list of dataset primary keys.\n- `std_project`: Match a list of project codes.\n- `std_dataset`: Match dataset project codes using a wildcard search string. The supported wildcards are `_` to match a single arbitrary character, and `%` to match any number of arbitrary characters. Literal `%` and `_` need to be escaped with a backslash. Backslashes need to be escaped themselves.\n- `std_date`: Match datasets whose `std_date_start` and `std_date_end` are within the date range expressed by the provided object `std_date_start` and `std_date_end` properties.\n- `std_date_submission`: Match datasets whose submission date is within the `min` and `max` time interval.\n- `_title`: Provide space delimited keywords to search dataset title.\n- `_description`: Provide space delimited keywords to search dataset description.\n- `_citation`: Provide space delimited keywords to search dataset citations.\n- `count`: Provide a `min` and `max` range to select datasets whose data record count lies in the interval.\n- `_subject`: Match a list of `_subject` *category codes*. Subjects are category codes associated to descriptors belonging to the dataset data collection.\n- `_classes`: Provide a list of _class category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Classes are category codes associated to descriptors belonging to the dataset data collection.\n- `_domain`: Provide a list of `_domain` category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Domains are category codes associated to descriptors belonging to the dataset data collection.\n- `_tag`: Provide a list of `_tag` category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Tags are category codes associated to descriptors belonging to the dataset data collection.\n- `species_list`: Provide space delimited keywords to search scientific names used in data.\n- `std_terms`: Provide a list of descriptor names used in the dataset data. Set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*.\n- `std_terms_quant`: Provide a list of quantitative descriptor names used in the dataset data. Set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*.\n- `std_terms_key`: Provide a list of dataset *key* fields, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Key fields represent the combination of fields that make a data record unique.\n- `std_terms_summary`: Provide a list of dataset *summary* fields, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Summary fields are those fields that can be *summarised* as *average*, *maximum*, *etc*.\n\nOmit the top level properties that should be ignored.\n\nIf the service is successful it will return the list of matched dataset records [`200`].\n\nIf the operation does not succeed, the service will return:\n\n- `500`: For other types of error.",
+        "description": "Use this service to query datasets.\n\nThis service can be used to select datasets according to a set of criteria.\n\nThe service expects the chaining operator, `op`, as a query path parameter. `AND` indicates that the dataset will be selected if *all selection criteria* is satisfied, `OR` if *at least one* matches. It defaults to `AND`.\n\nThe selection criteria is provided in the request body:\n\n- `_key`: Match a list of dataset primary keys.\n- `std_project`: Match a list of project codes.\n- `std_dataset`: Match dataset project codes using a wildcard search string. The supported wildcards are `_` to match a single arbitrary character, and `%` to match any number of arbitrary characters. Literal `%` and `_` need to be escaped with a backslash. Backslashes need to be escaped themselves.\n- `std_date`: Match datasets whose `std_date_start` and `std_date_end` are within the date range expressed by the provided object `std_date_start` and `std_date_end` properties.\n- `std_date_submission`: Match datasets whose submission date is within the `min` and `max` time interval.\n- `count`: Provide a `min` and `max` range to select datasets whose data record count lies in the interval.\n- `_subjects`: Match a list of `_subject` *category codes*. Subjects are category codes associated to descriptors belonging to the dataset data collection.\n- `_classes`: Provide a list of _class category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Classes are category codes associated to descriptors belonging to the dataset data collection.\n- `_domain`: Provide a list of `_domain` category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Domains are category codes associated to descriptors belonging to the dataset data collection.\n- `_tag`: Provide a list of `_tag` category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Tags are category codes associated to descriptors belonging to the dataset data collection.\n- `_title`: Provide space delimited keywords to search dataset title.\n- `_description`: Provide space delimited keywords to search dataset description.\n- `_citation`: Provide space delimited keywords to search dataset citations.\n- `species_list`: Provide space delimited keywords to search scientific names used in data.\n- `std_terms`: Provide a list of descriptor names used in the dataset data. Set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*.\n- `std_terms_key`: Provide a list of dataset *key* fields, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Key fields represent the combination of fields that make a data record unique.\n- `std_terms_quant`: Provide a list of quantitative descriptor names used in the dataset data. Set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*.\n- `std_terms_summary`: Provide a list of dataset *summary* fields, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Summary fields are those fields that can be *summarised* as *average*, *maximum*, *etc*.\n\nOmit the top level properties that should be ignored.\n\nIf the service is successful it will return the list of matched dataset records [`200`].\n\nIf the operation does not succeed, the service will return:\n\n- `500`: For other types of error.",
         "operationId": "fbf54a75-fd0b-4b80-94aa-4f094bfe55c4",
         "parameters": [
           {
@@ -39,10 +39,19 @@
               "default": "application/json; charset=utf-8",
               "description": ""
             }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "FOXXSID=null; FOXXSID.sig=659130347e9eb043443995f5b9aef83b6238df078ef297696fdd33b56bd7b0cb",
+              "description": ""
+            }
           }
         ],
         "requestBody": {
-          "description": "Use this service to query datasets.\n\nThis service can be used to select datasets according to a set of criteria.\n\nThe service expects the chaining operator, `op`, as a query path parameter. `AND` indicates that the dataset will be selected if *all selection criteria* is satisfied, `OR` if *at least one* matches. It defaults to `AND`.\n\nThe selection criteria is provided in the request body:\n\n- `_key`: Match a list of dataset primary keys.\n- `std_project`: Match a list of project codes.\n- `std_dataset`: Match dataset project codes using a wildcard search string. The supported wildcards are `_` to match a single arbitrary character, and `%` to match any number of arbitrary characters. Literal `%` and `_` need to be escaped with a backslash. Backslashes need to be escaped themselves.\n- `std_date`: Match datasets whose `std_date_start` and `std_date_end` are within the date range expressed by the provided object `std_date_start` and `std_date_end` properties.\n- `std_date_submission`: Match datasets whose submission date is within the `min` and `max` time interval.\n- `_title`: Provide space delimited keywords to search dataset title.\n- `_description`: Provide space delimited keywords to search dataset description.\n- `_citation`: Provide space delimited keywords to search dataset citations.\n- `count`: Provide a `min` and `max` range to select datasets whose data record count lies in the interval.\n- `_subject`: Match a list of `_subject` *category codes*. Subjects are category codes associated to descriptors belonging to the dataset data collection.\n- `_classes`: Provide a list of _class category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Classes are category codes associated to descriptors belonging to the dataset data collection.\n- `_domain`: Provide a list of `_domain` category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Domains are category codes associated to descriptors belonging to the dataset data collection.\n- `_tag`: Provide a list of `_tag` category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Tags are category codes associated to descriptors belonging to the dataset data collection.\n- `species_list`: Provide space delimited keywords to search scientific names used in data.\n- `std_terms`: Provide a list of descriptor names used in the dataset data. Set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*.\n- `std_terms_quant`: Provide a list of quantitative descriptor names used in the dataset data. Set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*.\n- `std_terms_key`: Provide a list of dataset *key* fields, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Key fields represent the combination of fields that make a data record unique.\n- `std_terms_summary`: Provide a list of dataset *summary* fields, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Summary fields are those fields that can be *summarised* as *average*, *maximum*, *etc*.\n\nOmit the top level properties that should be ignored.\n\nIf the service is successful it will return the list of matched dataset records [`200`].\n\nIf the operation does not succeed, the service will return:\n\n- `500`: For other types of error.",
+          "description": "Use this service to query datasets.\n\nThis service can be used to select datasets according to a set of criteria.\n\nThe service expects the chaining operator, `op`, as a query path parameter. `AND` indicates that the dataset will be selected if *all selection criteria* is satisfied, `OR` if *at least one* matches. It defaults to `AND`.\n\nThe selection criteria is provided in the request body:\n\n- `_key`: Match a list of dataset primary keys.\n- `std_project`: Match a list of project codes.\n- `std_dataset`: Match dataset project codes using a wildcard search string. The supported wildcards are `_` to match a single arbitrary character, and `%` to match any number of arbitrary characters. Literal `%` and `_` need to be escaped with a backslash. Backslashes need to be escaped themselves.\n- `std_date`: Match datasets whose `std_date_start` and `std_date_end` are within the date range expressed by the provided object `std_date_start` and `std_date_end` properties.\n- `std_date_submission`: Match datasets whose submission date is within the `min` and `max` time interval.\n- `count`: Provide a `min` and `max` range to select datasets whose data record count lies in the interval.\n- `_subjects`: Match a list of `_subject` *category codes*. Subjects are category codes associated to descriptors belonging to the dataset data collection.\n- `_classes`: Provide a list of _class category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Classes are category codes associated to descriptors belonging to the dataset data collection.\n- `_domain`: Provide a list of `_domain` category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Domains are category codes associated to descriptors belonging to the dataset data collection.\n- `_tag`: Provide a list of `_tag` category codes, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Tags are category codes associated to descriptors belonging to the dataset data collection.\n- `_title`: Provide space delimited keywords to search dataset title.\n- `_description`: Provide space delimited keywords to search dataset description.\n- `_citation`: Provide space delimited keywords to search dataset citations.\n- `species_list`: Provide space delimited keywords to search scientific names used in data.\n- `std_terms`: Provide a list of descriptor names used in the dataset data. Set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*.\n- `std_terms_key`: Provide a list of dataset *key* fields, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Key fields represent the combination of fields that make a data record unique.\n- `std_terms_quant`: Provide a list of quantitative descriptor names used in the dataset data. Set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*.\n- `std_terms_summary`: Provide a list of dataset *summary* fields, set the `doAll` property value to `true` in order to require *all elements* to be *matched*; if `false`, *any element* can *match*. Summary fields are those fields that can be *summarised* as *average*, *maximum*, *etc*.\n\nOmit the top level properties that should be ignored.\n\nIf the service is successful it will return the list of matched dataset records [`200`].\n\nIf the operation does not succeed, the service will return:\n\n- `500`: For other types of error.",
           "content": {
             "application/json": {
               "schema": {
@@ -177,7 +186,7 @@
                       }
                     }
                   },
-                  "_subject": {
+                  "_subjects": {
                     "type": "string",
                     "items": {
                       "type": "string"
@@ -499,7 +508,7 @@
     "/{Protocol}:/{Host}:{Port}/_db/{Db}/{Path}/dataset/qual/": {
       "get": {
         "summary": "Summary",
-        "description": "Use this service to get dataset summary data.\n\nThis service can be used to retrieve summary data for the dataset querying the dataset's data records.\n\nThe service expects the dataset primary key, `key`, as a query path parameter. If the dataset is matched, the service will return the summary of all data belonging to the dataset for the following fields:\n\n- `count`: Number of data records.\n- `std_date_start`: Date range start.\n- `std_date_end`: Date range end.\n- `_subject`: List of `_subject` categories featured in the data descriptors.\n- `_subject`: List of `_subject` categories featured in the data descriptors.\n- `_classes`: List of `_class` categories featured in the data descriptors.\n- `_domain`: List of `_subject` categories featured in the data descriptors.\n- `_tag`: List of `_tag` categories featured in the data descriptors.\n- `species_list`: List of featured scientific names featured in data.\n- `std_terms`: List of descriptors featured in data.\n- `std_terms_quant`: List of quantitative descriptors featured in data.\n\n*This service will dynamically query the data records belonging to the dataset, none of the corresponding fields stored in the dataset record will be returned.* Use this service to get up to date data statistics.\n\nThe service will return:\n\n- `200`: If *successful*, the service will return the full dataset record matching the search criteria.\n- `500`: *Any error*.",
+        "description": "Use this service to get dataset summary data.\n\nThis service can be used to retrieve summary data for the dataset querying the dataset's data records.\n\nThe service expects the dataset primary key, `key`, as a query path parameter. If the dataset is matched, the service will return the summary of all data belonging to the dataset for the following fields:\n\n- `count`: Number of data records.\n- `std_date_start`: Date range start.\n- `std_date_end`: Date range end.\n- `_subjects`: List of `_subject` categories featured in the data descriptors.\n- `_classes`: List of `_class` categories featured in the data descriptors.\n- `_domain`: List of `_subject` categories featured in the data descriptors.\n- `_tag`: List of `_tag` categories featured in the data descriptors.\n- `species_list`: List of featured scientific names featured in data.\n- `std_terms`: List of descriptors featured in data.\n- `std_terms_quant`: List of quantitative descriptors featured in data.\n\n*This service will dynamically query the data records belonging to the dataset, none of the corresponding fields stored in the dataset record will be returned.* Use this service to get up to date data statistics.\n\nThe service will return:\n\n- `200`: If *successful*, the service will return the full dataset record matching the search criteria.\n- `500`: *Any error*.",
         "operationId": "aab0688f-c99e-4957-9edd-28d7f89b5a37",
         "parameters": [
           {
@@ -510,10 +519,19 @@
               "default": "8194f5d7-b446-4dbc-b218-98fd2cb61091",
               "description": ""
             }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "FOXXSID=null; FOXXSID.sig=659130347e9eb043443995f5b9aef83b6238df078ef297696fdd33b56bd7b0cb",
+              "description": ""
+            }
           }
         ],
         "requestBody": {
-          "description": "Use this service to get dataset summary data.\n\nThis service can be used to retrieve summary data for the dataset querying the dataset's data records.\n\nThe service expects the dataset primary key, `key`, as a query path parameter. If the dataset is matched, the service will return the summary of all data belonging to the dataset for the following fields:\n\n- `count`: Number of data records.\n- `std_date_start`: Date range start.\n- `std_date_end`: Date range end.\n- `_subject`: List of `_subject` categories featured in the data descriptors.\n- `_subject`: List of `_subject` categories featured in the data descriptors.\n- `_classes`: List of `_class` categories featured in the data descriptors.\n- `_domain`: List of `_subject` categories featured in the data descriptors.\n- `_tag`: List of `_tag` categories featured in the data descriptors.\n- `species_list`: List of featured scientific names featured in data.\n- `std_terms`: List of descriptors featured in data.\n- `std_terms_quant`: List of quantitative descriptors featured in data.\n\n*This service will dynamically query the data records belonging to the dataset, none of the corresponding fields stored in the dataset record will be returned.* Use this service to get up to date data statistics.\n\nThe service will return:\n\n- `200`: If *successful*, the service will return the full dataset record matching the search criteria.\n- `500`: *Any error*.",
+          "description": "Use this service to get dataset summary data.\n\nThis service can be used to retrieve summary data for the dataset querying the dataset's data records.\n\nThe service expects the dataset primary key, `key`, as a query path parameter. If the dataset is matched, the service will return the summary of all data belonging to the dataset for the following fields:\n\n- `count`: Number of data records.\n- `std_date_start`: Date range start.\n- `std_date_end`: Date range end.\n- `_subjects`: List of `_subject` categories featured in the data descriptors.\n- `_classes`: List of `_class` categories featured in the data descriptors.\n- `_domain`: List of `_subject` categories featured in the data descriptors.\n- `_tag`: List of `_tag` categories featured in the data descriptors.\n- `species_list`: List of featured scientific names featured in data.\n- `std_terms`: List of descriptors featured in data.\n- `std_terms_quant`: List of quantitative descriptors featured in data.\n\n*This service will dynamically query the data records belonging to the dataset, none of the corresponding fields stored in the dataset record will be returned.* Use this service to get up to date data statistics.\n\nThe service will return:\n\n- `200`: If *successful*, the service will return the full dataset record matching the search criteria.\n- `500`: *Any error*.",
           "content": {
             "text/plain": {}
           },
@@ -546,7 +564,8 @@
                         "type": "string"
                       },
                       "example": [
-                        "chr_subject_stand"
+                        "chr_subject_stand",
+                        "chr_subject_target"
                       ]
                     },
                     "_classes": {
@@ -617,14 +636,14 @@
                         "type": "string"
                       },
                       "example": [
-                        "chr_Divergence",
-                        "chr_ExpHet",
-                        "chr_GenLoad",
-                        "chr_GenomicOffset",
-                        "chr_Inbreeding",
-                        "chr_PropClones",
                         "chr_SampleSize",
-                        "chr_SizeClones"
+                        "chr_ExpHet",
+                        "chr_Divergence",
+                        "chr_PropClones",
+                        "chr_SizeClones",
+                        "chr_Inbreeding",
+                        "chr_GenLoad",
+                        "chr_GenomicOffset"
                       ]
                     }
                   }
@@ -692,7 +711,7 @@
                 "description": "",
                 "schema": {
                   "type": "string",
-                  "example": "675"
+                  "example": "696"
                 }
               },
               "X-Arango-Queue-Time-Seconds": {
@@ -727,6 +746,15 @@
             "schema": {
               "type": "string",
               "default": "application/json; charset=utf-8",
+              "description": ""
+            }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "FOXXSID=null; FOXXSID.sig=659130347e9eb043443995f5b9aef83b6238df078ef297696fdd33b56bd7b0cb",
               "description": ""
             }
           }
@@ -844,14 +872,14 @@
                           "type": "string"
                         },
                         "example": [
-                          "chr_Divergence",
-                          "chr_ExpHet",
-                          "chr_GenLoad",
-                          "chr_GenomicOffset",
-                          "chr_Inbreeding",
-                          "chr_PropClones",
                           "chr_SampleSize",
-                          "chr_SizeClones"
+                          "chr_ExpHet",
+                          "chr_Divergence",
+                          "chr_PropClones",
+                          "chr_SizeClones",
+                          "chr_Inbreeding",
+                          "chr_GenLoad",
+                          "chr_GenomicOffset"
                         ]
                       },
                       "_tag": {
@@ -903,7 +931,8 @@
                           "type": "string"
                         },
                         "example": [
-                          "chr_subject_stand"
+                          "chr_subject_stand",
+                          "chr_subject_target"
                         ]
                       },
                       "std_date_end": {
@@ -985,7 +1014,7 @@
                 "description": "",
                 "schema": {
                   "type": "string",
-                  "example": "6106"
+                  "example": "6127"
                 }
               },
               "X-Arango-Queue-Time-Seconds": {
@@ -1038,6 +1067,15 @@
             "schema": {
               "type": "string",
               "default": "0",
+              "description": ""
+            }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "FOXXSID=null; FOXXSID.sig=659130347e9eb043443995f5b9aef83b6238df078ef297696fdd33b56bd7b0cb",
               "description": ""
             }
           }
@@ -1348,6 +1386,15 @@
               "default": "gcu_id_number",
               "description": ""
             }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "FOXXSID=null; FOXXSID.sig=659130347e9eb043443995f5b9aef83b6238df078ef297696fdd33b56bd7b0cb",
+              "description": ""
+            }
           }
         ],
         "requestBody": {
@@ -1529,6 +1576,15 @@
             "schema": {
               "type": "string",
               "default": "text/plain; charset=utf-8",
+              "description": ""
+            }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "FOXXSID=null; FOXXSID.sig=659130347e9eb043443995f5b9aef83b6238df078ef297696fdd33b56bd7b0cb",
               "description": ""
             }
           }

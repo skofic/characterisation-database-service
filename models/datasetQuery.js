@@ -34,37 +34,13 @@ module.exports = {
 		})
 			.or('min','max')
 			.description("Select by dataset submission date range"),
-		_title: joi.string()
-			.description("Select by dataset title keywords"),
-		_description: joi.string()
-			.description("Select by dataset description keywords"),
-		_citation: joi.string()
-			.description("Select by dataset citation keywords"),
-		std_terms_key: joi.object({
-			items: joi.array()
-				.items(joi.string())
-				.required(),
-			doAll: joi.boolean()
-				.default(false)
-				.required()
-		})
-			.description("Select by key fields"),
-		std_terms_summary: joi.object({
-			items: joi.array()
-				.items(joi.string())
-				.required(),
-			doAll: joi.boolean()
-				.default(false)
-				.required()
-		})
-			.description("Select by summary fields"),
 		count: joi.object({
 			min: joi.number().integer(),
 			max: joi.number().integer()
 		})
 			.or('min','max')
 			.description("Select by data records range"),
-		_subject: joi.array()
+		_subjects: joi.array()
 			.items(joi.string())
 			.description("Select by dataset subject"),
 		_classes: joi.object({
@@ -94,6 +70,12 @@ module.exports = {
 				.required()
 		})
 			.description("Select by descriptor tags"),
+		_title: joi.string()
+			.description("Select by dataset title keywords"),
+		_description: joi.string()
+			.description("Select by dataset description keywords"),
+		_citation: joi.string()
+			.description("Select by dataset citation keywords"),
 		species_list: joi.string()
 			.description("Select species by keyword"),
 		std_terms: joi.object({
@@ -105,6 +87,15 @@ module.exports = {
 				.required()
 		})
 			.description("Select by data variables"),
+		std_terms_key: joi.object({
+			items: joi.array()
+				.items(joi.string())
+				.required(),
+			doAll: joi.boolean()
+				.default(false)
+				.required()
+		})
+			.description("Select by key fields"),
 		std_terms_quant: joi.object({
 			items: joi.array()
 				.items(joi.string())
@@ -113,7 +104,16 @@ module.exports = {
 				.default(false)
 				.required()
 		})
-			.description("Select by quantitative data variables")
+			.description("Select by quantitative data variables"),
+		std_terms_summary: joi.object({
+			items: joi.array()
+				.items(joi.string())
+				.required(),
+			doAll: joi.boolean()
+				.default(false)
+				.required()
+		})
+			.description("Select by summary fields")
 	})
 		.description("Dataset search parameters"),
 
